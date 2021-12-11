@@ -11,24 +11,31 @@ PostNode& PostNode::operator=(PostNode&& other) noexcept {
 	return *this;
 }
 
-void PostNode::sortAnswers() {
+void PostNode::sortResponses() {
 	std::sort(_answers.begin(), _answers.end(),
-		[](PostNode const& one, PostNode const& two) {
-			return one.post().votes() > one.post().votes();
+		[](PostNode* one, PostNode* two) {
+			return one->post().votes() > one->post().votes();
 		});
-	for (auto& answer : _answers) {
-		answer.sortAnswers();
+	for (auto answer : _answers) {
+		answer->sortResponses();
 	}
 }
 
 bool PostNode::answerPost(std::string const& text, EPostType type = EPostType::Comment) {
 	if (_answers.size() >= 10) return false;
-	_answers.emplace_back(text, type, this);
+	_answers.push_back(new PostNode(text, type, this));
 	return true;
 }
 
-void PostNode::copyAnswers(std::vector<qna::PostNode> const& from) {
-	for (auto& answer : from) {
-		_answers.emplace_back(answer);
+void PostNode::copyResponses(std::vector<qna::PostNode*> const& from) {
+	for (auto answer : from) {
+		_answers.push_back(new PostNode(*answer));
 	}
+}
+
+void PostNode::freeResponses() {
+	for (auto answer : _answers) {
+		delete answer;
+	}
+	_answers.clear();
 }
