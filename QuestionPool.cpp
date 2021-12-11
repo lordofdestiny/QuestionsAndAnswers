@@ -39,7 +39,6 @@ bool QuestionPool::answer(PostNode* node, std::string const& text) {
 	return true;
 }
 
-
 void QuestionPool::reassignParents() {
 	std::queue<PostNode*> nodes;
 	for (auto& question : *this) {

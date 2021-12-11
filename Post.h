@@ -10,15 +10,11 @@ namespace qna {
 		Post(std::string comment, EPostType type = EPostType::Comment) :
 			_text(comment), _type(type), _id(_nextId++) {}
 		Post(Post const& rhs) :
-			_type(rhs._type),
-			_text(rhs._text),
-			_score(rhs._score),
-			_id(_nextId++) {};
+			_type(rhs._type), _text(rhs._text),
+			_score(rhs._score), _id(_nextId++) {};
 		Post(Post&& rhs) noexcept :
-			_type(rhs._type),
-			_text(std::move(rhs._text)),
-			_score(rhs._score),
-			_id(rhs._id) {}
+			_type(rhs._type), _text(std::move(rhs._text)),
+			_score(rhs._score), _id(rhs._id) {}
 		Post& operator=(Post const& other)  {
 			if (this != &other) {
 				_type = other._type;

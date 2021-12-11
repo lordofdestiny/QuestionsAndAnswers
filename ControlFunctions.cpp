@@ -81,7 +81,6 @@ void cnt::addQuestion(qna::QuestionPool*& qpool) {
 void cnt::answerQuestionOrResponse(qna::QuestionPool*& qpool) {
 	bool loop = true;
 	while (loop) {
-		
 		unsigned long id;
 		std::cout << "Enter id: ";
 		std::cin >> id;

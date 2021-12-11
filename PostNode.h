@@ -11,8 +11,7 @@ namespace qna {
 		friend class QuestionPool;
 	public:
 		PostNode(std::string const& text, EPostType type = EPostType::Comment, PostNode* parent = nullptr)
-			: _post(text, type),
-			_parent(parent) {}
+			: _post(text, type), _parent(parent) {}
 		PostNode(PostNode const&) = default;
 		PostNode(PostNode&& rhs) noexcept :
 			_post(std::move(rhs._post)),
@@ -68,4 +67,3 @@ namespace qna {
 		std::vector<qna::PostNode> _answers;
 	};
 }
-

@@ -29,5 +29,4 @@ namespace cnt {
 	void printQuestion(QuestionPool*&);
 	void deleteQuestion(QuestionPool*&);
 	void deleteResponse(QuestionPool*&);
-
 }
