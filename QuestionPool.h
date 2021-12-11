@@ -7,10 +7,18 @@ namespace qna {
 	{
 	public:
 		QuestionPool() : _questions() { };
-		QuestionPool(QuestionPool const&) = default;
+		QuestionPool(QuestionPool const& rhs) {
+			copyQuestions(rhs._questions);
+		};
 		QuestionPool(QuestionPool&& rhs) noexcept :
 			_questions(std::move(rhs._questions)) {}
-		QuestionPool& operator=(QuestionPool const&) = default;
+		QuestionPool& operator=(QuestionPool const& other) {
+			if (this != &other) {
+				_questions.clear();
+				copyQuestions(other._questions);
+			}
+			return *this;
+		}
 		QuestionPool& operator=(QuestionPool&& other) noexcept {
 			if (this != &other) {
 				_questions = std::move(other._questions);
@@ -37,16 +45,16 @@ namespace qna {
 		std::size_t questionCount() const {
 			return _questions.size();
 		}
-
-		auto begin() {
-			return _questions.begin();
-		}
-		auto end() {
-			return _questions.end();
-		}
 	private:
+		void copyQuestions(std::vector<qna::PostNode*> const& from) {
+			for (auto question : from) {
+				_questions.push_back(new PostNode(*question));
+			}
+		}
 		PostNode* findMostVotedInTree(PostNode*);
+#ifdef REASSIGN
 		void reassignParents();
-		std::vector<qna::PostNode> _questions;
+#endif
+		std::vector<qna::PostNode*> _questions;
 	};
 }

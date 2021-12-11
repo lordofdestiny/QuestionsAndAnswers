@@ -12,23 +12,33 @@ namespace qna {
 	public:
 		PostNode(std::string const& text, EPostType type = EPostType::Comment, PostNode* parent = nullptr)
 			: _post(text, type), _parent(parent) {}
-		PostNode(PostNode const&) = default;
+		PostNode(PostNode const& rhs) :
+			_post(rhs._post) {
+			copyResponses(rhs._answers);
+		}
 		PostNode(PostNode&& rhs) noexcept :
 			_post(std::move(rhs._post)),
 			_parent(rhs._parent),
 			_answers(std::move(rhs._answers)) {}
-		PostNode& operator=(PostNode const& other) = default;
+		PostNode& operator=(PostNode const& other) {
+			_post = other._post;
+			_answers.clear();
+			copyResponses(other._answers);
+		};
 		PostNode& operator=(PostNode&&) noexcept;
+		~PostNode() {
+			freeResponses();
+		}
 		Post& post() {
 			return _post;
 		}
 		Post const& post() const {
 			return _post;
 		}
-		std::vector<qna::PostNode>& answers() {
+		auto& answers() {
 			return _answers;
 		}
-		std::vector<qna::PostNode> const& answers() const {
+		auto const& answers() const {
 			return _answers;
 		}
 		PostNode* parent() const {
@@ -37,13 +47,7 @@ namespace qna {
 		unsigned answerCount() const {
 			return static_cast<unsigned>(_answers.size());
 		}
-		auto begin() {
-			return _answers.begin();
-		}
-		auto end() {
-			return _answers.end();
-		}
-		void sortAnswers();
+		void sortResponses();
 		bool answerPost(std::string const&, EPostType);
 		friend std::ostream& operator<<(std::ostream& os, PostNode const& node) {
 			EPostType type = node.post().type();
@@ -61,9 +65,10 @@ namespace qna {
 			return os << "]";
 		}
 	private:
-		void copyAnswers(std::vector<qna::PostNode> const& from);
+		void copyResponses(std::vector<qna::PostNode*> const& from);
+		void freeResponses();
 		Post _post;
 		PostNode* _parent = nullptr;
-		std::vector<qna::PostNode> _answers;
+		std::vector<qna::PostNode*> _answers;
 	};
 }

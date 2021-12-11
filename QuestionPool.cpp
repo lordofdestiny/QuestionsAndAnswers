@@ -9,13 +9,13 @@
 using namespace qna;
 
 void QuestionPool::addQuestion(std::string text) {
-	_questions.emplace_back(text, EPostType::Question);
+	_questions.push_back(new PostNode(text, EPostType::Question));
 }
 
 PostNode* QuestionPool::findAnyById(unsigned long id) {
 	std::queue<PostNode*> nodes;
-	for (auto& node : *this) {
-		nodes.push(&node);
+	for (auto node : this->_questions) {
+		nodes.push(node);
 	}
 	while (!nodes.empty()) {
 		PostNode* node = nodes.front();
@@ -23,8 +23,8 @@ PostNode* QuestionPool::findAnyById(unsigned long id) {
 		if (node->post().id() == id) {
 			return node;
 		}
-		for (auto& replies : *node) {
-			nodes.push(&replies);
+		for (auto reply : node->answers()) {
+			nodes.push(reply);
 		}
 	}
 	return nullptr;
@@ -35,38 +35,44 @@ bool QuestionPool::answer(PostNode* node, std::string const& text) {
 	auto newType = node->post().type() == EPostType::Question
 		? EPostType::Answer : EPostType::Comment;
 	node->answerPost(text, newType);
+#ifdef REASSIGN
 	reassignParents();
+#endif
 	return true;
 }
 
+#ifdef REASSIGN
 void QuestionPool::reassignParents() {
 	std::queue<PostNode*> nodes;
-	for (auto& question : *this) {
-		question._parent = nullptr;
-		nodes.push(&question);
+	for (auto question : _questions) {
+		question->_parent = nullptr;
+		nodes.push(question);
 	}
 	while (!nodes.empty()) {
 		PostNode* node = nodes.front();
 		nodes.pop();
-		for (auto& child : *node) {
-			child._parent = node;
-			nodes.push(&child);
+		for (auto child : node->answers()) {
+			child->_parent = node;
+			nodes.push(child);
 		}
 	}
 }
+#endif
 
 PostNode* QuestionPool::findQuestion(std::string text) {
-	auto answer = std::find_if(this->begin(), this->end(), [&](PostNode const& node) {
-		return node.post().text() == text;
+	auto answer = std::find_if(_questions.begin(), _questions.end(), 
+		[&](PostNode* node) {
+			return node->post().text() == text;
 		});
-	return answer == this->end() ? nullptr : &*answer;
+	return answer == _questions.end() ? nullptr : *answer;
 }
 
 PostNode* QuestionPool::findQuestion(unsigned long id) {
-	auto answer = std::find_if(this->begin(), this->end(), [&](PostNode const& node) {
-		return node.post().id() == id;
+	auto answer = std::find_if(_questions.begin(), _questions.end(),
+		[&](PostNode* node) {
+			return node->post().id() == id;
 		});
-	return answer == this->end() ? nullptr : &*answer;
+	return answer == _questions.end() ? nullptr : *answer;
 }
 
 PostNode* QuestionPool::findMostVotedInTree(PostNode* node) {
@@ -83,8 +89,8 @@ PostNode* QuestionPool::findMostVotedInTree(PostNode* node) {
 				maxNode = node;
 			}
 		}
-		for (auto& node : *node) {
-			nodes.push(&node);
+		for (auto node : node->answers()) {
+			nodes.push(node);
 		}
 	}
 	return maxNode;
@@ -108,13 +114,13 @@ bool QuestionPool::upvote(unsigned long id) {
 }
 
 void QuestionPool::sortAnswers() {
-	for (auto& node : *this) {
-		node.sortAnswers();
+	for (auto& node : _questions) {
+		node->sortResponses();
 	}
 }
 
 void QuestionPool::printQuestions() {
-	for (auto& node : *this) {
+	for (auto& node : _questions) {
 		std::cout << node << '\n';
 	};
 }
@@ -131,8 +137,8 @@ void QuestionPool::printTree(PostNode* node) {
 			nodes.pop();
 			remainingInLevel--;
 			std::cout << *node << "\t";
-			for (auto& replies : *node) {
-				nodes.push(&replies);
+			for (auto replies : node->answers()) {
+				nodes.push(replies);
 			}
 			addedToLevel += node->answerCount();
 		}
@@ -155,23 +161,27 @@ void QuestionPool::printQuestion(unsigned long id) {
 
 bool QuestionPool::deleteQuestion(std::string text) {
 	auto toDelete = std::find_if(_questions.begin(), _questions.end(),
-		[&](PostNode const& node) {
-			return node.post().text() == text;
+		[&](PostNode* node) {
+			return node->post().text() == text;
 		});
 	if (toDelete == _questions.end()) return false;
 	_questions.erase(toDelete);
+#ifdef REASSIGN
 	reassignParents();
+#endif
 	return true;
 }
 
 bool QuestionPool::deleteQuestion(unsigned long id) {
 	auto toDelete = std::find_if(_questions.begin(), _questions.end(),
-		[&](PostNode const& node) {
-			return node.post().id() == id;
+		[&](PostNode* node) {
+			return node->post().id() == id;
 		});
 	if (toDelete == _questions.end()) return false;
 	_questions.erase(toDelete);
+#ifdef REASSIGN
 	reassignParents();
+#endif
 	return true;
 }
 
@@ -181,12 +191,15 @@ bool QuestionPool::deleteResponse(unsigned long id) {
 	if (node->parent() == nullptr) return false;
 	if (node->post().type() == EPostType::Question) return false;
 	auto toDelete = std::find_if(
-		node->parent()->begin(), node->parent()->end(),
-		[&](PostNode const& node) {
-			return node.post().id() == id;
+		node->parent()->answers().begin(),
+		node->parent()->answers().end(),
+		[&](PostNode* node) {
+			return node->post().id() == id;
 		});
-	if (toDelete == node->parent()->end()) return false;
+	if (toDelete == node->parent()->answers().end()) return false;
 	node->parent()->answers().erase(toDelete);
+#ifdef REASSIGN
 	reassignParents();
+#endif
 	return true;
 };
