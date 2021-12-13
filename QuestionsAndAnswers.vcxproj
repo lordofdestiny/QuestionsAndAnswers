@@ -117,6 +117,7 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp17</LanguageStandard>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -142,14 +143,15 @@
   <ItemGroup>
     <ClCompile Include="ControlFunctions.cpp" />
     <ClCompile Include="Helpers.h" />
-    <ClCompile Include="PostNode.cpp" />
+    <ClCompile Include="Post.cpp" />
     <ClCompile Include="QuestionPool.cpp" />
     <ClCompile Include="QuestionsAndAnswers.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Answer.h" />
     <ClInclude Include="ControlFunctions.h" />
+    <ClInclude Include="GlobalID.h" />
     <ClInclude Include="Post.h" />
-    <ClInclude Include="PostNode.h" />
     <ClInclude Include="QuestionPool.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

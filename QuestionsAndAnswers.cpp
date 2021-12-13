@@ -28,6 +28,7 @@ int main()
 		std::cout << "Enter your choice: ";
 		std::cin >> choice;
 		code = cnt::activateChoice(choice, mainPool);
+		std::cout << cnt::separator;
 		if (code == -1) {
 			std::cout << "Exiting program... Your memory will be cleaned up.\n";
 			break;
