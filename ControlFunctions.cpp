@@ -14,8 +14,8 @@ void cnt::printMenu() {
 	std::cout << "7. Sort answers\n";
 	std::cout << "8. Print all questions\n";
 	std::cout << "9. Print a question in detail\n";
-	std::cout << "10. Delete an answer\n";
-	std::cout << "11. Delete a question\n";
+	std::cout << "10. Delete a question\n";
+	std::cout << "11. Delete a response\n";
 	std::cout << "12. Exit\n";
 }
 
@@ -25,7 +25,6 @@ int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
 	{
 	case 0:
 		cnt::printMenu();
-		std::cout << cnt::separator;
 		break;
 	case 1:
 		cnt::createPool(qpool);
@@ -34,7 +33,7 @@ int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
 		cnt::addQuestion(qpool);
 		break;
 	case 3:
-		cnt::answerQuestionOrResponse(qpool);
+		cnt::addAnswer(qpool);
 		break;
 	case 4:
 		cnt::searchQuestions(qpool);
@@ -46,7 +45,7 @@ int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
 		cnt::upvoteResponse(qpool);
 		break;
 	case 7:
-		qpool->sortAnswers();
+		qpool->sortAll();
 		std::cout << "All trees were sorted!\n";
 		break;
 	case 8:
@@ -70,216 +69,131 @@ int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
 }
 
 void cnt::addQuestion(qna::QuestionPool*& qpool) {
-	std::cout << "Enter question text: ";
-	std::string str;
-	std::cin.ignore();
-	std::getline(std::cin, str);
+	std::string str = promptValue<std::string>("Question text: ");
 	qpool->addQuestion(str);
-	std::cout << "Question successfully added!\n";
+	std::cout << "Question added!\n";
 }
 
-void cnt::answerQuestionOrResponse(qna::QuestionPool*& qpool) {
-	bool loop = true;
-	while (loop) {
-		unsigned long id;
-		std::cout << "Enter id: ";
-		std::cin >> id;
-		PostNode* node = qpool->findAnyById(id);
-		std::string text;
-		std::cout << "Enter text for the answer: ";
-		std::cin.ignore();
-		std::getline(std::cin, text);
-		std::cout << (qpool->answer(node, text)
-			? "Answer successfully added!\n" :
-			"This question was not found! Check input and try again!\n");
-		loop = false;
-	}
+void cnt::addAnswer(qna::QuestionPool*& qpool) {
+	cnt::textOrIdMenuHandler([qpool](int option) {
+		bool result = false;
+		if (option == 1) {
+			auto text = promptValue<std::string>("Enter text: ");
+			std::string answerText = promptValue<std::string>("Answer text: ");
+			result = qpool->postAnswer(text, text);
+		}
+		else {
+			auto id = promptValue<GlobalID::IDType>("Enter id: ");
+			std::string answerText = promptValue<std::string>("Answer text: ");
+			result = qpool->postAnswer(id, answerText);
+		}
+		std::cout << (result ? "Answer added!\n" : "No entery found!\n");
+		});
 }
 
 void cnt::searchQuestions(qna::QuestionPool*& qpool) {
-	bool loop = true;
-	while (loop) {
-		std::cout << "Search options:\n";
-		std::cout << "1. By exact question text\n";
-		std::cout << "2. By question ID\n";
-		std::cout << "3. Cancel\n";
-		std::cout << "Pick an option: ";
-		int option;
-		std::cin >> option;
-		if (option == 3) {
-			std::cout << "Command cancelled\n";
-			break;
-		}
-		if (option != 1 && option != 2) {
-			std::cout << "Wrong option! Try again\n";
-			continue;
-		}
-		qna::PostNode* result;
+	cnt::textOrIdMenuHandler([qpool](int option) {
+		Answer result;
 		if (option == 1) {
-			std::string question;
-			std::cout << "Enter question text: ";
-			std::cin.ignore();
-			std::getline(std::cin, question);
+			auto question = promptValue<std::string>("Question text: ");
 			result = qpool->findQuestion(question);
 		}
-		else {//must be 2 
-			unsigned long id;
-			std::cout << "Enter question id: ";
-			std::cin >> id;
+		else {
+			auto id = promptValue<GlobalID::IDType>("Question id: ");
 			result = qpool->findQuestion(id);
 		}
 		std::cout << (result != nullptr
 			? "Question found!\n"
-			: "No matching question was found!\n");
-		loop = false;
-	}
+			: "No question found!\n");
+		});
 }
 
 void cnt::findHighestRatedResponse(qna::QuestionPool*& qpool) {
-	bool loop = true;
-	while (loop) {
-		std::cout << "Search options:\n";
-		std::cout << "1. By exact question text\n";
-		std::cout << "2. By question ID\n";
-		std::cout << "3. Cancel\n";
-		std::cout << "Pick an option: ";
-		int option;
-		std::cin >> option;
-		if (option == 3) {
-			std::cout << "Command cancelled\n";
-			break;
-		}
-		if (option != 1 && option != 2) {
-			std::cout << "Wrong option! Try again\n";
-			continue;
-		}
-		qna::PostNode* result;
+	cnt::textOrIdMenuHandler([qpool](int option) {
+		Answer result;
 		if (option == 1) {
-			std::string question;
-			std::cout << "Enter question text: ";
-			std::cin.ignore();
-			std::getline(std::cin, question);
+			auto question = promptValue<std::string>("Enter question text: ");
 			result = qpool->findHighestVotedResponse(question);
 		}
-		else {//must be 2 
-			unsigned long id;
-			std::cout << "Enter question id: ";
-			std::cin >> id;
+		else {
+			auto id = promptValue<GlobalID::IDType>("Enter question id: ");
 			result = qpool->findHighestVotedResponse(id);
 		}
-		std::cout << (result != nullptr
-			? "Most voted answer found!\n"
-			: "No matching answers were found!\n");
-		if (result) {
-			qna::QuestionPool::printTree(result);
+		if (result != nullptr) {
+			std::cout << *result << "\n";
 		}
-		loop = false;
-	}
+		else {
+			std::cout << "No matching answers were found!\n";
+		}
+		});
 }
 
 void cnt::upvoteResponse(qna::QuestionPool*& qpool) {
-	std::cout << "Enter response id: ";
-	unsigned long id;
-	std::cin >> id;
-	std::cout << (qpool->upvote(id)
-		? "Answer with given id upvoted!\n"
-		: "There was no question with given ID!\n");
+	cnt::textOrIdMenuHandler([qpool](int option) {
+		bool result = false;
+		if (option == 1) {
+			std::string question = promptValue<std::string>("Response text: ");
+			result = qpool->upvote(question);
+		}
+		else {
+			unsigned long id = promptValue<GlobalID::IDType>("Response id: ");
+			result = qpool->upvote(id);
+		}
+		std::cout << (result ? "Response upvoted!\n" : "No response found!\n");
+		});
 }
 
 void cnt::printQuestion(qna::QuestionPool*& qpool) {
-	bool loop = true;
-	while (loop) {
-		std::cout << "Search options:\n";
-		std::cout << "1. By exact question text\n";
-		std::cout << "2. By question ID\n";
-		std::cout << "3. Cancel\n";
-		std::cout << "Pick an option: ";
-		int option;
-		std::cin >> option;
-		if (option == 3) {
-			std::cout << "Command cancelled\n";
-			break;
-		}
-		if (option != 1 && option != 2) {
-			std::cout << "Wrong option! Try again\n";
-			continue;
-		}
-		qna::PostNode* result;
+	textOrIdMenuHandler([qpool](int option) {
 		if (option == 1) {
-			std::string question;
-			std::cout << "Enter question text: ";
-			std::cin.ignore();
-			std::getline(std::cin, question);
-			result = qpool->findQuestion(question);
-		}
-		else {//must be 2 
-			unsigned long id;
-			std::cout << "Enter question id: ";
-			std::cin >> id;
-			result = qpool->findQuestion(id);
-		}
-		if (result != nullptr) {
-			qna::QuestionPool::printTree(result);
+			auto question = promptValue<std::string>("Question text: ");
+			qpool->printQuestion(question);
 		}
 		else {
-			std::cout << "No matching question found!\n";
+			auto id = promptValue<GlobalID::IDType>("Question id: ");
+			qpool->printQuestion(id);
 		}
-		loop = false;
-	}
+		});
 }
 
 void cnt::deleteQuestion(qna::QuestionPool*& qpool) {
-	if (qpool->questionCount() <= 0) {
-		std::cout << "There are no questions to delete!\n";
-		return;
-	}
-	bool loop = true;
-	while (loop) {
-		std::cout << "Search options:\n";
-		std::cout << "1. By exact question text\n";
-		std::cout << "2. By question ID\n";
-		std::cout << "3. Cancel\n";
-		std::cout << "Pick an option: ";
-		int option;
-		std::cin >> option;
-		if (option == 3) {
-			std::cout << "Command cancelled\n";
-			break;
-		}
-		if (option != 1 && option != 2) {
-			std::cout << "Wrong option! Try again\n";
-			continue;
+	textOrIdMenuHandler([qpool](int option) {
+		if (qpool->questionCount() <= 0) {
+			std::cout << "There are no questions to delete!\n";
+			return;
 		}
 		bool result;
 		if (option == 1) {
-			std::string question;
-			std::cout << "Enter question text: ";
-			std::cin.ignore();
-			std::getline(std::cin, question);
+			auto question = promptValue<std::string>("Question text: ");
 			result = qpool->deleteQuestion(question);
 		}
 		else {//must be 2 
-			unsigned long id;
-			std::cout << "Enter question id: ";
-			std::cin >> id;
+			auto id = promptValue<GlobalID::IDType>("Question id:");
 			result = qpool->deleteQuestion(id);
 		}
 		std::cout << (result
-			? "Question deleted successfully\n"
-			: "No matching question found!\n");
-		loop = false;
-	}
+			? "Question deleted!\n"
+			: "No question was found!\n");
+		});
 }
 
 void cnt::deleteResponse(qna::QuestionPool*& qpool) {
-	if (qpool->questionCount() <= 0) {
-		std::cout << "There are no questions to delete responses from!\n";
-		return;
-	}
-	std::cout << "Enter response id: ";
-	unsigned long id;
-	std::cin >> id;
-	std::cout << (qpool->deleteResponse(id)
-		? "Answer with given id deleted!\n"
-		: "There was no question with given ID!\n");
+	textOrIdMenuHandler([qpool](int option) {
+		if (qpool->questionCount() <= 0) {
+			std::cout << "There are no questions to delete responses from!\n";
+			return;
+		}
+		bool result = false;
+		if (option == 1) {
+			auto id = promptValue<std::string>("Response text: ");
+			result = qpool->deleteResponse(id);
+		}
+		else {
+			auto id = promptValue<GlobalID::IDType>("Response id: ");
+			result = qpool->deleteResponse(id);
+		}
+		std::cout << (result
+			? "Answer deleted!\n"
+			: "There was no answer to delete!\n");
+		});
 }
