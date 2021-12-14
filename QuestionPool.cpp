@@ -166,13 +166,6 @@ void QuestionPool::printQuestions(std::ostream& os) {
 	};
 }
 
-void QuestionPool::printQuestion(GlobalID::IDType id, EPrintMode mode, std::ostream& os) {
-	printQuestionReal(id, mode, os);
-}
-void QuestionPool::printQuestion(std::string text, EPrintMode mode, std::ostream& os) {
-	printQuestionReal(text, mode, os);
-}
-
 bool QuestionPool::deleteQuestionReal(SearchLambda condition) {
 	auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
 	if (toDelete == _questions.end()) return false;
