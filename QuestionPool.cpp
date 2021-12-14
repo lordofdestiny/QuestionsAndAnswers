@@ -10,7 +10,7 @@ using namespace qna;
 
 QuestionPool::~QuestionPool() {
 	for (auto question : _questions) {
-		delete& question;
+		delete question;
 	}
 	_questions.clear();
 }
@@ -23,7 +23,7 @@ Post* QuestionPool::findQuestionReal(SearchLambda condition) {
 	auto answer = std::find_if(_questions.begin(), _questions.end(), condition);
 	return answer == _questions.end() ? nullptr : *answer;
 }
-Answer QuestionPool::findQuestion(unsigned long id) {
+Answer QuestionPool::findQuestion(GlobalID::IDType id) {
 	return findQuestionReal(
 		[&id](Post* node) {
 			return node->id() == id;
@@ -53,7 +53,7 @@ Post* QuestionPool::findResponseReal(SearchLambda condition) {
 	}
 	return nullptr;
 }
-Post* QuestionPool::findResponse(unsigned long id) {
+Post* QuestionPool::findResponse(GlobalID::IDType id) {
 	return findResponseReal(
 		[&id](Post* node) -> bool {
 			return node->id() == id;
@@ -84,7 +84,7 @@ Post* QuestionPool::findAnyReal(SearchLambda condition) {
 	}
 	return nullptr;
 }
-Post* QuestionPool::findAny(unsigned long id) {
+Post* QuestionPool::findAny(GlobalID::IDType id) {
 	return findAnyReal(
 		[&id](Post* node) -> bool {
 			return node->id() == id;
@@ -97,19 +97,19 @@ Post* QuestionPool::findAny(std::string text) {
 		});
 }
 
-bool QuestionPool::postAnswerReal(Post* node, std::string& text) {
+bool QuestionPool::addAnswerReal(Post* node, std::string& text) {
 	if (node == nullptr) return false;
 	node->answer(text);
 	return true;
 }
 
-bool QuestionPool::postAnswer(unsigned long id, std::string answerText) {
+bool QuestionPool::addAnswer(GlobalID::IDType id, std::string answerText) {
 	Post* node = findAny(id);
-	return postAnswerReal(node, answerText);
+	return addAnswerReal(node, answerText);
 }
-bool QuestionPool::postAnswer(std::string text, std::string answerText) {
+bool QuestionPool::addAnswer(std::string text, std::string answerText) {
 	Post* node = findAny(text);
-	return postAnswerReal(node, answerText);
+	return addAnswerReal(node, answerText);
 }
 
 Post* QuestionPool::findHighestVotedInTree(Post* node) {
@@ -131,7 +131,7 @@ Post* QuestionPool::findHighestVotedInTree(Post* node) {
 	}
 	return maxNode;
 }
-Answer QuestionPool::findHighestVotedResponse(unsigned long id) {
+Answer QuestionPool::findHighestVotedResponse(GlobalID::IDType id) {
 	Post* question = findQuestion(id);
 	return findHighestVotedInTree(question);
 }
@@ -145,7 +145,7 @@ bool QuestionPool::upvoteReal(Post* node) {
 	node->upvote();
 	return true;
 }
-bool QuestionPool::upvote(unsigned long id) {
+bool QuestionPool::upvote(GlobalID::IDType id) {
 	Post* node = findResponse(id);
 	return upvoteReal(node);
 }
@@ -166,8 +166,8 @@ void QuestionPool::printQuestions(std::ostream& os) {
 	};
 }
 
-void QuestionPool::printQuestion(unsigned long id, std::ostream& os) {
-	Post* node = findAny(id);
+void QuestionPool::printQuestion(GlobalID::IDType id, std::ostream& os) {
+	Post* node = findQuestion(id);
 	if (node != nullptr)
 		os << node->asTree();
 	else
@@ -180,7 +180,6 @@ void QuestionPool::printQuestion(std::string text, std::ostream& os) {
 		os << node->asTree();
 	else
 		os << "Question not found!\n";
-
 }
 
 bool QuestionPool::deleteQuestionReal(SearchLambda condition) {
@@ -189,7 +188,7 @@ bool QuestionPool::deleteQuestionReal(SearchLambda condition) {
 	_questions.erase(toDelete);
 	return true;
 }
-bool QuestionPool::deleteQuestion(unsigned long id) {
+bool QuestionPool::deleteQuestion(GlobalID::IDType id) {
 	return deleteQuestionReal(
 		[&id](Post* node) {
 			return node->id() == id;
@@ -202,7 +201,7 @@ bool QuestionPool::deleteQuestion(std::string text) {
 		});
 }
 
-bool QuestionPool::deleteResponse(unsigned long id) {
+bool QuestionPool::deleteResponse(GlobalID::IDType id) {
 	return deleteResponseReal(
 		id, [&id](Post* node) {
 			return node->id() == id;

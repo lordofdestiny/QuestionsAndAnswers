@@ -13,7 +13,7 @@ Post::~Post() {
 }
 
 qna::Answer& Post::findInParent() const {
-	assert(_parent == nullptr, "A root represents a question and it cannot be upvoted!");
+	assert((_parent != nullptr));
 	auto result = std::find(
 		_parent->_answers.begin(),
 		_parent->_answers.end(), this);
@@ -30,13 +30,13 @@ Post& Post::operator=(Post&& other) noexcept {
 }
 
 void Post::sort() {
-	std::sort(_answers.begin(), _answers.end());
+	std::sort(_answers.begin(), _answers.end(), std::greater<Answer>());
 	for (auto answer : _answers) {
 		answer->sort();
 	}
 }
 
-bool Post::answer(std::string const& text) noexcept(false) { // Needs to be fixed
+bool Post::answer(std::string const& text) noexcept(false) {
 	if (_answers.size() >= 10) return false;
 	_answers.emplace_back(new Post(text, this));
 	return true;
@@ -44,11 +44,11 @@ bool Post::answer(std::string const& text) noexcept(false) { // Needs to be fixe
 
 std::ostream& qna::operator<<(std::ostream& os, Post const& node) {
 	std::string parent = node.parent() == nullptr
-		? "R" : std::to_string(node.parent()->id());
+		? "R" : "P=" + std::to_string(node.parent()->id());
 	os << "(" << parent << ", ID=" << node.id() << "): [\"";
-	os << node.text() << "\", Ans{" << node.answerCount() << "}";
+	os << "Text: " << node.text() << "\", Answers: " << node.answerCount();
 	if (node.parent() != nullptr) {
-		os << ", Vote{" << node.votes() << "}";
+		os << ", Votes: " << node.votes();
 	}
 	return os << "]";
 }
@@ -71,7 +71,6 @@ std::ostream& qna::operator<<(std::ostream& os, Post::Tree const& tree) {
 			}
 			addedToLevel += node->answerCount();
 		}
-		os << "\n";
 		remainingInLevel = std::exchange(addedToLevel, 0);
 		level++;
 	}

@@ -22,15 +22,19 @@ namespace qna {
 		}
 		operator qna::Post* () const {
 			return _ptr;
-		}	
+		}
 		int votes() const {
 			return _rating;
 		}
 		int upvote() {
 			return ++_rating;
 		}
-		bool operator<(Answer const& that) {
+		bool operator<(Answer const& that)const {
+			std::cout << "Called!!!\n";
 			return _rating < that._rating;
+		}
+		bool operator>(Answer const& that)const {
+			return _rating > that._rating;
 		}
 	};
 }

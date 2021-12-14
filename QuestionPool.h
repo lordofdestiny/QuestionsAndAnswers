@@ -24,35 +24,35 @@ namespace qna {
 		}
 		~QuestionPool();
 		void addQuestion(std::string);
-		bool postAnswer(unsigned long, std::string);
-		bool postAnswer(std::string, std::string);
+		bool addAnswer(GlobalID::IDType, std::string);
+		bool addAnswer(std::string, std::string);
 		Answer findQuestion(std::string);
-		Answer findQuestion(unsigned long);
+		Answer findQuestion(GlobalID::IDType);
 		Answer findHighestVotedResponse(std::string);
-		Answer findHighestVotedResponse(unsigned long);
-		bool upvote(unsigned long);
+		Answer findHighestVotedResponse(GlobalID::IDType);
+		bool upvote(GlobalID::IDType);
 		bool upvote(std::string);
 		void sortAll();
-		void printQuestions(std::ostream& os = std::cout);
-		void printQuestion(std::string, std::ostream& os = std::cout);
-		void printQuestion(unsigned long, std::ostream& os = std::cout);
+		void printQuestions(std::ostream& = std::cout);
+		void printQuestion(std::string, std::ostream& = std::cout);
+		void printQuestion(GlobalID::IDType, std::ostream& = std::cout);
 		bool deleteQuestion(std::string);
-		bool deleteQuestion(unsigned long);
+		bool deleteQuestion(GlobalID::IDType);
 		bool deleteResponse(std::string);
-		bool deleteResponse(unsigned long);
+		bool deleteResponse(GlobalID::IDType);
 
 		std::size_t questionCount() const {
 			return _questions.size();
 		}
 	private:
+		bool addAnswerReal(Post* question, std::string& text);	
 		Post* findQuestionReal(SearchLambda);
 		Post* findResponseReal(SearchLambda);
 		Post* findResponse(std::string);
-		Post* findResponse(unsigned long);
+		Post* findResponse(GlobalID::IDType);
 		Post* findAnyReal(SearchLambda);
 		Post* findAny(std::string);
-		Post* findAny(unsigned long);
-		bool postAnswerReal(Post* question, std::string& text);	
+		Post* findAny(GlobalID::IDType);
 		Post* findHighestVotedInTree(Post*);
 		bool upvoteReal(Post*);
 		bool deleteQuestionReal(SearchLambda);

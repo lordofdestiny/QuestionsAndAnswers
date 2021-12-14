@@ -80,12 +80,12 @@ void cnt::addAnswer(qna::QuestionPool*& qpool) {
 		if (option == 1) {
 			auto text = promptValue<std::string>("Enter text: ");
 			std::string answerText = promptValue<std::string>("Answer text: ");
-			result = qpool->postAnswer(text, text);
+			result = qpool->addAnswer(text, text);
 		}
 		else {
 			auto id = promptValue<GlobalID::IDType>("Enter id: ");
 			std::string answerText = promptValue<std::string>("Answer text: ");
-			result = qpool->postAnswer(id, answerText);
+			result = qpool->addAnswer(id, answerText);
 		}
 		std::cout << (result ? "Answer added!\n" : "No entery found!\n");
 		});
@@ -136,7 +136,7 @@ void cnt::upvoteResponse(qna::QuestionPool*& qpool) {
 			result = qpool->upvote(question);
 		}
 		else {
-			unsigned long id = promptValue<GlobalID::IDType>("Response id: ");
+			auto id = promptValue<GlobalID::IDType>("Response id: ");
 			result = qpool->upvote(id);
 		}
 		std::cout << (result ? "Response upvoted!\n" : "No response found!\n");
@@ -167,7 +167,7 @@ void cnt::deleteQuestion(qna::QuestionPool*& qpool) {
 			auto question = promptValue<std::string>("Question text: ");
 			result = qpool->deleteQuestion(question);
 		}
-		else {//must be 2 
+		else {
 			auto id = promptValue<GlobalID::IDType>("Question id:");
 			result = qpool->deleteQuestion(id);
 		}
