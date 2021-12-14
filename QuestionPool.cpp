@@ -166,20 +166,11 @@ void QuestionPool::printQuestions(std::ostream& os) {
 	};
 }
 
-void QuestionPool::printQuestion(GlobalID::IDType id, std::ostream& os) {
-	Post* node = findQuestion(id);
-	if (node != nullptr)
-		os << node->asTree();
-	else
-		os << "Question not found!\n";
-
+void QuestionPool::printQuestion(GlobalID::IDType id, EPrintMode mode, std::ostream& os) {
+	printQuestionReal(id, mode, os);
 }
-void QuestionPool::printQuestion(std::string text, std::ostream& os) {
-	Post* node = findQuestion(text);
-	if (node != nullptr)
-		os << node->asTree();
-	else
-		os << "Question not found!\n";
+void QuestionPool::printQuestion(std::string text, EPrintMode mode, std::ostream& os) {
+	printQuestionReal(text, mode, os);
 }
 
 bool QuestionPool::deleteQuestionReal(SearchLambda condition) {

@@ -5,6 +5,10 @@
 #include <utility>
 #include <iostream>
 #include <queue>
+#include <cassert>
+#include <iostream>
+#include <stack>
+#include "Helpers.h"
 #include "Answer.h"
 #include "GlobalID.h"
 
@@ -68,16 +72,29 @@ namespace qna {
 		bool answer(std::string const&) noexcept(false);
 		friend std::ostream& operator<<(std::ostream& os, Post const& node);
 
-		class Tree {
+		class LevelOdrer {
 		private:
 			Post const* _ptr;
 		public:
-			Tree(Post const* node) :_ptr(node) {}
-			friend std::ostream& operator<<(std::ostream& os, Tree const& tree);
+			LevelOdrer(Post const* node) :_ptr(node) {}
+			friend std::ostream& operator<<(std::ostream& os, LevelOdrer const& tree);
 		};
 
-		Tree asTree() const {
+		LevelOdrer asLevelOrder() const {
 			return this;
 		}
+
+		class PreOrder {
+		private:
+			Post const* _ptr;
+		public:
+			PreOrder(Post const* node) :_ptr(node) {}
+			friend std::ostream& operator<<(std::ostream& os, PreOrder const& tree);
+		};
+
+		PreOrder asInOrder() const {
+			return this;
+		}
+
 	};
 }
