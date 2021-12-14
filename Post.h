@@ -52,7 +52,7 @@ namespace qna {
 		auto const& answers() const {
 			return _answers;
 		}
-		unsigned long id() const {
+		GlobalID::IDType id() const {
 			return _id;
 		}
 		Post* parent() const {
@@ -67,6 +67,7 @@ namespace qna {
 		void sort();
 		bool answer(std::string const&) noexcept(false);
 		friend std::ostream& operator<<(std::ostream& os, Post const& node);
+
 		class Tree {
 		private:
 			Post const* _ptr;
@@ -74,6 +75,7 @@ namespace qna {
 			Tree(Post const* node) :_ptr(node) {}
 			friend std::ostream& operator<<(std::ostream& os, Tree const& tree);
 		};
+
 		Tree asTree() const {
 			return this;
 		}
