@@ -1,7 +1,4 @@
-#include <cassert>
-#include <iostream>
 #include "Post.h"
-#include "Helpers.h"
 
 using namespace qna;
 
@@ -53,7 +50,7 @@ std::ostream& qna::operator<<(std::ostream& os, Post const& node) {
 	return os << "]";
 }
 
-std::ostream& qna::operator<<(std::ostream& os, Post::Tree const& tree) {
+std::ostream& qna::operator<<(std::ostream& os, Post::LevelOdrer const& tree) {
 	if (tree._ptr == nullptr) return os << "nulltpr";
 	std::queue <Post const*> nodes;
 	nodes.push(tree._ptr);
@@ -73,6 +70,21 @@ std::ostream& qna::operator<<(std::ostream& os, Post::Tree const& tree) {
 		}
 		remainingInLevel = std::exchange(addedToLevel, 0);
 		level++;
+	}
+	return os;
+}
+
+std::ostream& qna::operator<<(std::ostream& os, Post::PreOrder const& tree) {
+	if (tree._ptr == nullptr) return os << "nulltpr";
+	std::stack <std::pair<Post const*, unsigned>> nodes;
+	nodes.emplace(tree._ptr, 0);
+	while (!nodes.empty()) {
+		auto [node, level] = nodes.top();
+		nodes.pop();
+		os << std::string(level, '\t') << *node << "\n";
+		for (auto it = node->answers().rbegin(); it != node->answers().rend(); it++) {
+			nodes.emplace(*it, level + 1);
+		}
 	}
 	return os;
 }

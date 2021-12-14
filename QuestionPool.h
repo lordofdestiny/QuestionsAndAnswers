@@ -33,9 +33,10 @@ namespace qna {
 		bool upvote(GlobalID::IDType);
 		bool upvote(std::string);
 		void sortAll();
-		void printQuestions(std::ostream& = std::cout);
-		void printQuestion(std::string, std::ostream& = std::cout);
-		void printQuestion(GlobalID::IDType, std::ostream& = std::cout);
+		void printQuestions(std::ostream & = std::cout);
+		enum class EPrintMode { LevelOrder, PreOrder };
+		void printQuestion(std::string, EPrintMode = EPrintMode::LevelOrder, std::ostream & = std::cout);
+		void printQuestion(GlobalID::IDType, EPrintMode = EPrintMode::LevelOrder, std::ostream & = std::cout);
 		bool deleteQuestion(std::string);
 		bool deleteQuestion(GlobalID::IDType);
 		bool deleteResponse(std::string);
@@ -45,7 +46,7 @@ namespace qna {
 			return _questions.size();
 		}
 	private:
-		bool addAnswerReal(Post* question, std::string& text);	
+		bool addAnswerReal(Post* question, std::string& text);
 		Post* findQuestionReal(SearchLambda);
 		Post* findResponseReal(SearchLambda);
 		Post* findResponse(std::string);
@@ -55,6 +56,21 @@ namespace qna {
 		Post* findAny(GlobalID::IDType);
 		Post* findHighestVotedInTree(Post*);
 		bool upvoteReal(Post*);
+		template<typename T>
+		void printQuestionReal(T key, EPrintMode mode, std::ostream& os) {
+			Post* node = findQuestion(key);
+			if (node != nullptr) {
+				if (mode == EPrintMode::LevelOrder) {
+					os << node->asLevelOrder();
+				}
+				else {
+					os << node->asInOrder();
+				}
+			}
+			else {
+				os << "Question not found!\n";
+			}
+		}
 		bool deleteQuestionReal(SearchLambda);
 		template<typename T>
 		bool deleteResponseReal(T parameter, SearchLambda condition) {
