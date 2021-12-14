@@ -30,7 +30,6 @@ namespace qna {
 			return ++_rating;
 		}
 		bool operator<(Answer const& that)const {
-			std::cout << "Called!!!\n";
 			return _rating < that._rating;
 		}
 		bool operator>(Answer const& that)const {
