@@ -70,31 +70,35 @@ namespace qna {
 		}
 		void sort();
 		bool answer(std::string const&) noexcept(false);
-		friend std::ostream& operator<<(std::ostream& os, Post const& node);
+		friend std::ostream& operator<<(std::ostream& os, Post const& node) {
+			return os << node.asRoot();
+		}
 
-		class LevelOdrer {
+		class NodePrinter {
+		public:
+			enum class EPrintMode { Root, LevelOrder, PreOrder };
 		private:
 			Post const* _ptr;
+			EPrintMode _mode;
 		public:
-			LevelOdrer(Post const* node) :_ptr(node) {}
-			friend std::ostream& operator<<(std::ostream& os, LevelOdrer const& tree);
+			NodePrinter(Post const* node, EPrintMode mode = EPrintMode::Root)
+				:_ptr(node), _mode(mode) {}
+			std::ostream& printRoot(std::ostream& os) const;
+			std::ostream& printLevelOrder(std::ostream& os) const;
+			std::ostream& printPreOrder(std::ostream& os) const;
+			friend std::ostream& operator<<(std::ostream& os, NodePrinter const& tree);
 		};
 
-		LevelOdrer asLevelOrder() const {
+		NodePrinter asRoot() const {
 			return this;
 		}
 
-		class PreOrder {
-		private:
-			Post const* _ptr;
-		public:
-			PreOrder(Post const* node) :_ptr(node) {}
-			friend std::ostream& operator<<(std::ostream& os, PreOrder const& tree);
-		};
-
-		PreOrder asInOrder() const {
-			return this;
+		NodePrinter asLevelOrder() const {
+			return { this, NodePrinter::EPrintMode::LevelOrder };
 		}
 
+		NodePrinter asInOrder() const {
+			return { this, NodePrinter::EPrintMode::PreOrder };
+		}
 	};
 }

@@ -6,194 +6,151 @@
 #include "QuestionPool.h"
 #include "Helpers.h"
 
-using namespace qna;
-
-QuestionPool::~QuestionPool() {
-	for (auto question : _questions) {
-		delete question;
-	}
-	_questions.clear();
-}
-
-void QuestionPool::addQuestion(std::string text) {
-	_questions.push_back(new Post(text));
-}
-
-Post* QuestionPool::findQuestionReal(SearchLambda condition) {
-	auto answer = std::find_if(_questions.begin(), _questions.end(), condition);
-	return answer == _questions.end() ? nullptr : *answer;
-}
-Answer QuestionPool::findQuestion(GlobalID::IDType id) {
-	return findQuestionReal(
-		[&id](Post* node) {
-			return node->id() == id;
-		});
-}
-Answer QuestionPool::findQuestion(std::string text) {
-	return findQuestionReal(
-		[&text](Post* node)->bool {
-			return node->text() == text;
-		});
-}
-
-Post* QuestionPool::findResponseReal(SearchLambda condition) {
-	std::queue<Post*> nodes;
-	for (auto node : this->_questions) {
-		nodes.push(node);
-	}
-	while (!nodes.empty()) {
-		Post* node = nodes.front();
-		nodes.pop();
-		if (!node->isQuestion() && condition(node)) {
-			return node;
+namespace qna {
+	QuestionPool::~QuestionPool() {
+		for (auto question : _questions) {
+			delete question;
 		}
-		for (auto reply : node->answers()) {
-			nodes.push(reply);
-		}
+		_questions.clear();
 	}
-	return nullptr;
-}
-Post* QuestionPool::findResponse(GlobalID::IDType id) {
-	return findResponseReal(
-		[&id](Post* node) -> bool {
-			return node->id() == id;
-		});
-}
-Post* QuestionPool::findResponse(std::string text) {
-	return findResponseReal(
-		[&text](Post* node) -> bool {
-			return node->text() == text;
-		});
-}
 
-
-Post* QuestionPool::findAnyReal(SearchLambda condition) {
-	std::queue<Post*> nodes;
-	for (auto node : this->_questions) {
-		nodes.push(node);
+	void QuestionPool::addQuestion(std::string text) {
+		_questions.push_back(new Post(text));
 	}
-	while (!nodes.empty()) {
-		Post* node = nodes.front();
-		nodes.pop();
-		if (condition(node)) {
-			return node;
-		}
-		for (auto reply : node->answers()) {
-			nodes.push(reply);
-		}
-	}
-	return nullptr;
-}
-Post* QuestionPool::findAny(GlobalID::IDType id) {
-	return findAnyReal(
-		[&id](Post* node) -> bool {
-			return node->id() == id;
-		});
-}
-Post* QuestionPool::findAny(std::string text) {
-	return findAnyReal(
-		[&text](Post* node) -> bool {
-			return node->text() == text;
-		});
-}
 
-bool QuestionPool::addAnswerReal(Post* node, std::string& text) {
-	if (node == nullptr) return false;
-	node->answer(text);
-	return true;
-}
-
-bool QuestionPool::addAnswer(GlobalID::IDType id, std::string answerText) {
-	Post* node = findAny(id);
-	return addAnswerReal(node, answerText);
-}
-bool QuestionPool::addAnswer(std::string text, std::string answerText) {
-	Post* node = findAny(text);
-	return addAnswerReal(node, answerText);
-}
-
-Post* QuestionPool::findHighestVotedInTree(Post* node) {
-	if (node == nullptr) return nullptr;
-	Post* maxNode = nullptr;
-	std::queue<Post*> nodes;
-	nodes.push(node);
-	while (!nodes.empty()) {
-		Post* node = nodes.front();
-		nodes.pop();
-		if (node == nullptr) continue;
-		for (auto node : node->answers()) {
+	Post* QuestionPool::findReal(SearchLambda userCondition, ESearchType stype) {
+		bool findQuestion = stype == ESearchType::Question;
+		bool findResponse = stype == ESearchType::Response;
+		bool findAny = stype == ESearchType::Any;
+		SearchLambda condition = [&](Post* node)->bool {
+			return (
+				(findQuestion && node->isQuestion() && userCondition(node))
+				|| (findResponse && !node->isQuestion() && userCondition(node))
+				|| (findAny && userCondition(node)));
+		};
+		std::queue<Post*> nodes;
+		for (auto node : _questions) {
 			nodes.push(node);
 		}
-		if (node->parent() == nullptr) continue;
-		if (maxNode == nullptr || node->votes() > maxNode->votes()) {
-			maxNode = node;
+		Post* result = nullptr;
+		while (!nodes.empty()) {
+			Post* curr = nodes.front();
+			nodes.pop();
+			if (condition(curr)) {
+				result = curr;
+				break;
+			}
+			for (auto answer : curr->answers()) {
+				nodes.push(answer);
+			}
+		}
+		return result;
+	}
+
+	Answer QuestionPool::findQuestion(GlobalID::IDType id) {
+		return findReal(makeIdCmp(id), ESearchType::Question);
+	}
+	Answer QuestionPool::findQuestion(std::string text) {
+		return findReal(makeTextCmp(text), ESearchType::Question);
+	}
+
+	Post* QuestionPool::findResponse(GlobalID::IDType id) {
+		return findReal(makeIdCmp(id), ESearchType::Response);
+	}
+	Post* QuestionPool::findResponse(std::string text) {
+		return findReal(makeTextCmp(text), ESearchType::Response);
+	}
+
+	Post* QuestionPool::findAny(GlobalID::IDType id) {
+		return findReal(makeIdCmp(id), ESearchType::Any);
+	}
+	Post* QuestionPool::findAny(std::string text) {
+		return findReal(makeTextCmp(text), ESearchType::Any);
+	}
+
+	bool QuestionPool::addAnswerReal(Post* node, std::string& text) {
+		if (node == nullptr) return false;
+		node->answer(text);
+		return true;
+	}
+
+	bool QuestionPool::addAnswer(GlobalID::IDType id, std::string answerText) {
+		return addAnswerReal(findAny(id), answerText);
+	}
+	bool QuestionPool::addAnswer(std::string text, std::string answerText) {
+		return addAnswerReal(findAny(text), answerText);
+	}
+
+	Post* QuestionPool::findHighestVotedInTree(Post* node) {
+		if (node == nullptr) return nullptr;
+		Post* maxNode = nullptr;
+		std::queue<Post*> nodes;
+		nodes.push(node);
+		while (!nodes.empty()) {
+			Post* node = nodes.front();
+			nodes.pop();
+			if (node == nullptr) continue;
+			for (auto node : node->answers()) {
+				nodes.push(node);
+			}
+			if (node->parent() == nullptr) continue;
+			if (maxNode == nullptr || node->votes() > maxNode->votes()) {
+				maxNode = node;
+			}
+		}
+		return maxNode;
+	}
+	Answer QuestionPool::findHighestVotedResponse(GlobalID::IDType id) {
+		Post* question = findQuestion(id);
+		return findHighestVotedInTree(question);
+	}
+	Answer QuestionPool::findHighestVotedResponse(std::string text) {
+		Post* question = findQuestion(text);
+		return findHighestVotedInTree(question);
+	}
+
+	bool QuestionPool::upvoteReal(Post* node) {
+		if (node == nullptr || node->parent() == nullptr) return false;
+		node->upvote();
+		return true;
+	}
+	bool QuestionPool::upvote(GlobalID::IDType id) {
+		Post* node = findResponse(id);
+		return upvoteReal(node);
+	}
+	bool QuestionPool::upvote(std::string text) {
+		Post* node = findResponse(text);
+		return upvoteReal(node);
+	}
+
+	void QuestionPool::sortAll() {
+		for (auto& node : _questions) {
+			node->sort();
 		}
 	}
-	return maxNode;
-}
-Answer QuestionPool::findHighestVotedResponse(GlobalID::IDType id) {
-	Post* question = findQuestion(id);
-	return findHighestVotedInTree(question);
-}
-Answer QuestionPool::findHighestVotedResponse(std::string text) {
-	Post* question = findQuestion(text);
-	return findHighestVotedInTree(question);
-}
 
-bool QuestionPool::upvoteReal(Post* node) {
-	if (node == nullptr || node->parent() == nullptr) return false;
-	node->upvote();
-	return true;
-}
-bool QuestionPool::upvote(GlobalID::IDType id) {
-	Post* node = findResponse(id);
-	return upvoteReal(node);
-}
-bool QuestionPool::upvote(std::string text) {
-	Post* node = findResponse(text);
-	return upvoteReal(node);
-}
-
-void QuestionPool::sortAll() {
-	for (auto& node : _questions) {
-		node->sort();
+	void QuestionPool::printQuestions(std::ostream& os) {
+		for (auto& node : _questions) {
+			os << *node << '\n';
+		};
 	}
-}
 
-void QuestionPool::printQuestions(std::ostream& os) {
-	for (auto& node : _questions) {
-		os << *node << '\n';
-	};
-}
-
-bool QuestionPool::deleteQuestionReal(SearchLambda condition) {
-	auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
-	if (toDelete == _questions.end()) return false;
-	_questions.erase(toDelete);
-	return true;
-}
-bool QuestionPool::deleteQuestion(GlobalID::IDType id) {
-	return deleteQuestionReal(
-		[&id](Post* node) {
-			return node->id() == id;
-		});
-}
-bool QuestionPool::deleteQuestion(std::string text) {
-	return deleteQuestionReal(
-		[&text](Post* node) {
-			return node->text() == text;
-		});
-}
-
-bool QuestionPool::deleteResponse(GlobalID::IDType id) {
-	return deleteResponseReal(
-		id, [&id](Post* node) {
-			return node->id() == id;
-		});
-}
-bool QuestionPool::deleteResponse(std::string text) {
-	return deleteResponseReal(
-		text, [&text](Post* node) {
-			return node->text() == text;
-		});
+	bool QuestionPool::deleteQuestionReal(SearchLambda condition) {
+		auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
+		if (toDelete == _questions.end()) return false;
+		_questions.erase(toDelete);
+		return true;
+	}
+	bool QuestionPool::deleteQuestion(GlobalID::IDType id) {
+		return deleteQuestionReal(makeIdCmp(id));
+	}
+	bool QuestionPool::deleteQuestion(std::string text) {
+		return deleteQuestionReal(makeTextCmp(text));
+	}
+	bool QuestionPool::deleteResponse(GlobalID::IDType id) {
+		return deleteResponseReal(id, makeIdCmp(id));
+	}
+	bool QuestionPool::deleteResponse(std::string text) {
+		return deleteResponseReal(text, makeTextCmp(text));
+	}
 }
