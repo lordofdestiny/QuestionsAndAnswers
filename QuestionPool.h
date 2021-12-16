@@ -36,19 +36,16 @@ namespace qna {
 		void printQuestions(std::ostream & = std::cout);
 		enum class EPrintMode { LevelOrder, PreOrder };
 		template<typename T>
-		void printQuestion(T key, EPrintMode mode = EPrintMode::LevelOrder, std::ostream& os = std::cout) {
+		void printQuestion(T key,
+			Post::NodePrinter::EPrintMode mode
+			= Post::NodePrinter::EPrintMode::LevelOrder,
+			std::ostream& os = std::cout) {
 			Post* node = findQuestion(key);
-			if (node != nullptr) {
-				if (mode == EPrintMode::LevelOrder) {
-					os << node->asLevelOrder();
-				}
-				else {
-					os << node->asInOrder();
-				}
-			}
-			else {
+			if (node == nullptr) {
 				os << "Question not found!\n";
+				return;
 			}
+			os << Post::NodePrinter(node, mode) << "\n";
 		}
 		bool deleteQuestion(std::string);
 		bool deleteQuestion(GlobalID::IDType);
@@ -60,11 +57,20 @@ namespace qna {
 		}
 	private:
 		bool addAnswerReal(Post* question, std::string& text);
-		Post* findQuestionReal(SearchLambda);
-		Post* findResponseReal(SearchLambda);
+		enum class ESearchType { Any, Question, Response };
+		static auto makeTextCmp(std::string& text) {
+			return [&text](Post* node) {
+				return node->text() == text;
+			};
+		}
+		static auto makeIdCmp(GlobalID::IDType id) {
+			return [id](Post* node) {
+				return node->id() == id;
+			};
+		}
+		Post* findReal(SearchLambda, ESearchType = ESearchType::Any);
 		Post* findResponse(std::string);
 		Post* findResponse(GlobalID::IDType);
-		Post* findAnyReal(SearchLambda);
 		Post* findAny(std::string);
 		Post* findAny(GlobalID::IDType);
 		Post* findHighestVotedInTree(Post*);
@@ -74,12 +80,10 @@ namespace qna {
 		bool deleteResponseReal(T parameter, SearchLambda condition) {
 			Post* node = findResponse(parameter);
 			if (node == nullptr || node->parent() == nullptr) return false;
-			auto toDelete = std::find_if(
-				node->parent()->answers().begin(),
-				node->parent()->answers().end(),
-				condition);
-			if (toDelete == node->parent()->answers().end()) return false;
-			node->parent()->answers().erase(toDelete);
+			auto& pAnswers = node->parent()->answers();
+			auto toDelete = std::find_if(pAnswers.begin(), pAnswers.end(), condition);
+			if (toDelete == pAnswers.end()) return false;
+			pAnswers.erase(toDelete);
 			return true;
 		}
 	};
