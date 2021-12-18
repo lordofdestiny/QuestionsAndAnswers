@@ -156,7 +156,7 @@ namespace cnt {
 
 	void searchQuestions(qna::QuestionPool*& qpool) {
 		textOrIdMenuHandler([qpool](int option) {
-			Answer result;
+			Post* result;
 			if (option == 1) {
 				auto question = promptValue<std::string>("Question text: ");
 				result = qpool->findQuestion(question);
@@ -173,7 +173,7 @@ namespace cnt {
 
 	void findHighestRatedResponse(qna::QuestionPool*& qpool) {
 		textOrIdMenuHandler([qpool](int option) {
-			Answer result;
+			Post* result;
 			if (option == 1) {
 				auto question = promptValue<std::string>("Enter question text: ");
 				result = qpool->findHighestVotedResponse(question);
@@ -206,8 +206,8 @@ namespace cnt {
 			});
 	}
 
-	qna::Post::PostPrinter::EPrintMode promptForPrintMode() {
-		using enum qna::Post::PostPrinter::EPrintMode;
+	Post::PostPrinter::EPrintMode promptForPrintMode() {
+		using enum Post::PostPrinter::EPrintMode;
 		bool loop = true;
 		while (loop) {
 			std::cout << "Output type: \n";
@@ -221,7 +221,7 @@ namespace cnt {
 				std::cout << "Wrong option! Try again\n";
 				continue;
 			}
-			return static_cast<qna::Post::PostPrinter::EPrintMode>(option - 1);
+			return static_cast<Post::PostPrinter::EPrintMode>(option - 1);
 			loop = false;
 		}
 		return Root;
