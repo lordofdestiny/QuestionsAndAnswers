@@ -18,9 +18,6 @@
     <ClCompile Include="QuestionsAndAnswers.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="QuestionPool.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="Post.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -45,6 +42,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="Answer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="SearchFunction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

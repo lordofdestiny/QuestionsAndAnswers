@@ -10,13 +10,47 @@ void cnt::printMenu() {
 	std::cout << "3. Add a response\n";
 	std::cout << "4. Search questions\n";
 	std::cout << "5. Search higest rated for question\n";
-	std::cout << "6. Upvote an answer\n";
-	std::cout << "7. Sort answers\n";
-	std::cout << "8. Print all questions\n";
-	std::cout << "9. Print a question in detail\n";
-	std::cout << "10. Delete a question\n";
-	std::cout << "11. Delete a response\n";
-	std::cout << "12. Exit\n";
+	std::cout << "6. Search most answered question\n";
+	std::cout << "7. Find question which has highest rated response\n";
+	std::cout << "8. Upvote an answer\n";
+	std::cout << "9. Sort answers\n";
+	std::cout << "10. Print all questions\n";
+	std::cout << "11. Print a question in detail\n";
+	std::cout << "12. Delete a question\n";
+	std::cout << "13. Delete a response\n";
+	std::cout << "14. Exit\n";
+}
+
+void cnt::initQuestionPool(qna::QuestionPool*& qpool) {
+	qpool = new QuestionPool();
+	qpool->addQuestion("Question 1");
+	qpool->addAnswer("Question 1", "Answer 1");
+	qpool->addAnswer("Question 1", "Answer 2");
+	qpool->addAnswer("Answer 1", "Answer 1.1");
+	qpool->addAnswer("Answer 1", "Answer 1.2");
+	qpool->addAnswer("Answer 1.1", "Answer 1.1.1");
+	qpool->addAnswer("Answer 1.1", "Answer 1.1.2");
+	qpool->addAnswer("Answer 1.1", "Answer 1.1.3");
+	qpool->addAnswer("Answer 2", "Answer 2.1");
+	qpool->addAnswer("Answer 2", "Answer 2.2");
+	qpool->addAnswer("Answer 2.2", "Answer 2.2.1");
+	qpool->addAnswer("Answer 2.2", "Answer 2.2.2");
+	qpool->addAnswer("Answer 2.2", "Answer 2.2.3");
+	qpool->addQuestion("Question 2");
+	qpool->addAnswer("Question 2", "Answer X");
+	qpool->addAnswer("Question 2", "Answer XX");
+	qpool->addAnswer("Question 2", "Answer XXX");
+	qpool->addQuestion("Question 3");
+	qpool->addAnswer("Question 3", "Only this answer");
+	qpool->upvote("Answer 1.1.1");
+	qpool->upvote("Answer 1.1.1");
+	qpool->upvote("Answer 1.1.2");
+	qpool->upvote("Answer 1.1.3");
+	qpool->upvote("Answer 1.1.3");
+	qpool->upvote("Answer 1.1.3");
+	qpool->upvote("Answer 2.1");
+	qpool->upvote("Answer 2.2");
+	qpool->upvote("Answer 2");
 }
 
 int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
@@ -42,25 +76,31 @@ int cnt::activateChoice(int choice, qna::QuestionPool*& qpool) {
 		cnt::findHighestRatedResponse(qpool);
 		break;
 	case 6:
-		cnt::upvoteResponse(qpool);
+		cnt::findMostAnsweredQuestion(qpool);
 		break;
 	case 7:
+		cnt::findQuestionWithHighestVotedResponse(qpool);
+		break;
+	case 8:
+		cnt::upvoteResponse(qpool);
+		break;
+	case 9:
 		qpool->sortAll();
 		std::cout << "All trees were sorted!\n";
 		break;
-	case 8:
+	case 10:
 		cnt::printQuestions(qpool);
 		break;
-	case 9:
+	case 11:
 		cnt::printQuestion(qpool);
 		break;
-	case 10:
+	case 12:
 		cnt::deleteQuestion(qpool);
 		break;
-	case 11:
+	case 13:
 		cnt::deleteResponse(qpool);
 		break;
-	case 12:
+	case 14:
 		return -1;
 	default:
 		return 0;
@@ -168,7 +208,7 @@ void cnt::deleteQuestion(qna::QuestionPool*& qpool) {
 			result = qpool->deleteQuestion(question);
 		}
 		else {
-			auto id = promptValue<GlobalID::IDType>("Question id:");
+			auto id = promptValue<GlobalID::IDType>("Question id: ");
 			result = qpool->deleteQuestion(id);
 		}
 		std::cout << (result
@@ -197,3 +237,24 @@ void cnt::deleteResponse(qna::QuestionPool*& qpool) {
 			: "There was no answer to delete!\n");
 		});
 }
+
+void cnt::findMostAnsweredQuestion(QuestionPool*& qpool) {
+	auto question = qpool->findMostAnsweredQuestion();
+	if (question == nullptr) {
+		std::cout << "There were no questions to search from!\n";
+	}
+	else {
+		std::cout << question->asPreOrder() << '\n';
+	}
+}
+
+void cnt::findQuestionWithHighestVotedResponse(QuestionPool*& qpool) {
+	auto question = qpool->findQuestionWithHighestVotedResponse();
+	if (question == nullptr) {
+		std::cout << "There were no questions to search from!\n";
+	}
+	else {
+		std::cout << question->asPreOrder() << '\n';
+	}
+}
+

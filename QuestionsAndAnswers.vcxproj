@@ -116,7 +116,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
-      <LanguageStandard>stdcpp17</LanguageStandard>
+      <LanguageStandard>stdcpp20</LanguageStandard>
       <PrecompiledHeader>NotUsing</PrecompiledHeader>
     </ClCompile>
     <Link>
@@ -132,6 +132,7 @@
       <SDLCheck>true</SDLCheck>
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
+      <LanguageStandard>stdcpp20</LanguageStandard>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
@@ -144,7 +145,6 @@
     <ClCompile Include="ControlFunctions.cpp" />
     <ClCompile Include="Helpers.h" />
     <ClCompile Include="Post.cpp" />
-    <ClCompile Include="QuestionPool.cpp" />
     <ClCompile Include="QuestionsAndAnswers.cpp" />
   </ItemGroup>
   <ItemGroup>
@@ -153,6 +153,7 @@
     <ClInclude Include="GlobalID.h" />
     <ClInclude Include="Post.h" />
     <ClInclude Include="QuestionPool.h" />
+    <ClInclude Include="SearchFunction.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

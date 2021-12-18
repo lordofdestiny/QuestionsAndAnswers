@@ -13,6 +13,8 @@
 #include "GlobalID.h"
 
 namespace qna {
+	using cnt::takeFrom;
+
 	class Answer;
 	class Post
 	{
@@ -62,43 +64,65 @@ namespace qna {
 		Post* parent() const {
 			return _parent;
 		}
-		unsigned answerCount() const {
+		unsigned childrenCount() const {
 			return static_cast<unsigned>(_answers.size());
 		}
-		void printRoot(std::ostream& os = std::cout) const {
-			os << *this;
+
+		unsigned totalResponseCount() const {
+			std::queue<Post const*> nodes;
+			nodes.push(this);
+			unsigned count = this->childrenCount();
+			while (!nodes.empty()) {
+				auto curr = takeFrom(nodes);
+				for (Post* node : curr->answers()) {
+					nodes.push(node);
+					count += node->childrenCount();
+				}
+			}
+			return count;
 		}
+
 		void sort();
 		bool answer(std::string const&) noexcept(false);
 		friend std::ostream& operator<<(std::ostream& os, Post const& node) {
 			return os << node.asRoot();
 		}
 
-		class NodePrinter {
+		class PostPrinter {
 		public:
-			enum class EPrintMode { Root, LevelOrder, PreOrder };
+			enum class EPrintMode { Root, LevelOrder, PreOrder, InOrder,PostOrder };
 		private:
 			Post const* _ptr;
 			EPrintMode _mode;
 		public:
-			NodePrinter(Post const* node, EPrintMode mode = EPrintMode::Root)
+			PostPrinter(Post const* node, EPrintMode mode = EPrintMode::Root)
 				:_ptr(node), _mode(mode) {}
 			std::ostream& printRoot(std::ostream& os) const;
 			std::ostream& printLevelOrder(std::ostream& os) const;
 			std::ostream& printPreOrder(std::ostream& os) const;
-			friend std::ostream& operator<<(std::ostream& os, NodePrinter const& tree);
+			std::ostream& printInOrder(std::ostream& os) const;
+			std::ostream& printPostOrder(std::ostream& os) const;
+			friend std::ostream& operator<<(std::ostream& os, PostPrinter const& tree);
 		};
 
-		NodePrinter asRoot() const {
+		using enum PostPrinter::EPrintMode;
+
+		PostPrinter asRoot() const {
 			return this;
 		}
-
-		NodePrinter asLevelOrder() const {
-			return { this, NodePrinter::EPrintMode::LevelOrder };
+		PostPrinter asLevelOrder() const {
+			return { this, LevelOrder };
 		}
-
-		NodePrinter asInOrder() const {
-			return { this, NodePrinter::EPrintMode::PreOrder };
+		PostPrinter asPreOrder() const {
+			return { this, PreOrder };
 		}
+		PostPrinter asInOrder() const {
+			return { this, InOrder };
+		}
+		PostPrinter asPostOrder() const {
+			return { this, PostOrder };
+		}
+	private:
+		static std::size_t treeHeight(Post const*);
 	};
 }

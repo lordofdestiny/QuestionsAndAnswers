@@ -48,8 +48,11 @@ namespace cnt {
 		}
 	}
 	void findHighestRatedResponse(QuestionPool*&);
+	void findMostAnsweredQuestion(QuestionPool*&);
+	void findQuestionWithHighestVotedResponse(QuestionPool*&);
 	void upvoteResponse(QuestionPool*&);
 	void printQuestion(QuestionPool*&);
 	void deleteQuestion(QuestionPool*&);
 	void deleteResponse(QuestionPool*&);
+	void initQuestionPool(QuestionPool*& pool);
 }
