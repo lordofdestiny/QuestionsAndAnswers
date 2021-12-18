@@ -1,17 +1,12 @@
 #pragma once
 #include <vector>
+#include <unordered_map>
 #include <functional>
 #include "Post.h"
 #include "SearchFunction.h"
 
 namespace qna {
 	using cnt::takeFrom;
-
-	template<typename T>
-	concept QueryType =
-		std::is_same_v<T, GlobalID::IDType>
-		|| std::is_same_v<T, std::string>
-		|| std::is_same_v<T, const char*>;
 
 	class QuestionPool
 	{
@@ -44,19 +39,19 @@ namespace qna {
 		}
 
 		template<QueryType T>
-		bool addAnswer(T query, std::string text) {
-			Post* node = findReal(std::forward<T>(query), ESearchType::Any);
+		bool addAnswer(T _query, std::string text) {
+			Post* node = find(std::forward<T>(_query), ESearchType::Any);
 			return node != nullptr ? node->answer(text) : false;
 		}
 
 		template<QueryType T>
-		Post* findQuestion(T query) {
-			return findReal(query, ESearchType::Question);
+		Post* findQuestion(T _query) {
+			return find(_query, ESearchType::Question);
 		}
 
 		template<QueryType T>
-		Post* findHighestVotedResponse(T query) {
-			Post* node = findQuestion(query);
+		Post* findHighestVotedResponse(T _query) {
+			Post* node = findQuestion(_query);
 			if (node == nullptr) return nullptr;
 			Post* maxNode = nullptr;
 			std::queue<Post*> nodes;
@@ -77,15 +72,21 @@ namespace qna {
 
 		Post* findMostAnsweredQuestion() {
 			if (_questions.empty()) return nullptr;
+			std::unordered_map<Post*, unsigned> maxVotes;
+			std::transform(_questions.begin(), _questions.end(),
+				std::inserter(maxVotes, maxVotes.end()),
+				[this](Post* const& node) {
+					return std::make_pair(node, node->totalResponseCount());
+				});
 			auto maxNode = std::max_element(
 				_questions.begin(), _questions.end(),
-				[](Post* first, Post* second) {
-					return first->totalResponseCount() < second->totalResponseCount();
+				[&maxVotes](Post* first, Post* second) {
+					return maxVotes[first] < maxVotes[second];
 				});
 			if (maxNode == _questions.end()) return nullptr;
 			return *maxNode;
 		}
-		
+
 		Post* findQuestionWithHighestVotedResponse() {
 			if (_questions.empty()) return nullptr;
 			auto maxNode = std::max_element(
@@ -100,8 +101,8 @@ namespace qna {
 		}
 
 		template<QueryType T>
-		bool upvote(T query) {
-			Post* node = findReal(query, ESearchType::Response);
+		bool upvote(T _query) {
+			Post* node = find(_query, ESearchType::Response);
 			if (node == nullptr || node->isQuestion()) return false;
 			node->upvote();
 			return true;
@@ -120,8 +121,8 @@ namespace qna {
 		}
 
 		template<typename T>
-		void printQuestion(T key, PrintMode mode = PrintMode::LevelOrder, std::ostream& os = std::cout) {
-			Post* node = findQuestion(key);
+		void printQuestion(T query, PrintMode mode = PrintMode::LevelOrder, std::ostream& os = std::cout) {
+			Post* node = findQuestion(query);
 			if (node == nullptr) {
 				os << "Question not found!\n";
 				return;
@@ -131,7 +132,7 @@ namespace qna {
 
 		template<QueryType T>
 		bool deleteQuestion(T query) {
-			auto condition = SearchFunction<T>{}(query);
+			SearchFunction<T> condition(query);
 			auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
 			if (toDelete == _questions.end()) return false;
 			_questions.erase(toDelete);
@@ -140,8 +141,8 @@ namespace qna {
 
 		template<typename T>
 		bool deleteResponse(T query) {
-			Post* node = findReal(query, ESearchType::Response);
-			auto condition = SearchFunction<T>{}(query);
+			Post* node = find(query, ESearchType::Response);
+			SearchFunction<T> condition(query);
 			if (node == nullptr || node->isQuestion()) return false;
 			auto& pAnswers = node->parent()->answers();
 			auto toDelete = std::find_if(pAnswers.begin(), pAnswers.end(), condition);
@@ -155,12 +156,12 @@ namespace qna {
 		}
 	private:
 		template<QueryType T>
-		Post* findReal(T query, ESearchType stype) {
+		Post* find(T query, ESearchType stype) {
 			using enum ESearchType;
 			bool findQuestion = stype == Question;
 			bool findResponse = stype == Response;
 			bool findAny = stype == Any;
-			auto userCondition = SearchFunction<T>{}(query);
+			SearchFunction<T> userCondition(query);
 			auto condition = [&](Post* node) {
 				return (
 					(findQuestion && node->isQuestion() && userCondition(node))

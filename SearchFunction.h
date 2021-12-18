@@ -4,33 +4,29 @@
 #include "Post.h"
 
 namespace qna {
-	template<typename>
-	struct SearchFunction;
+	template<typename T>
+	concept QueryType =
+		std::is_same_v<T, GlobalID::IDType>
+		|| std::is_same_v<T, std::string>
+		|| std::is_same_v<T, const char*>;
+
+	template<QueryType>
+	struct SearchFunction {
+		SearchFunction(std::string text) : _query(text) {}
+		auto operator()(Post const* node) {
+			return node->text() == _query;
+		}
+	private:
+		std::string _query;
+	};
 
 	template<>
 	struct SearchFunction<GlobalID::IDType> {
-		auto operator()(GlobalID::IDType id) {
-			return [id](Post* node) {
-				return node->id() == id;
-			};
+		SearchFunction(GlobalID::IDType id) :_query(id) {}
+		auto operator()(Post const* node) {
+			return node->id() == _query;
 		}
-	};
-
-	template<>
-	struct SearchFunction<std::string> {
-		auto operator()(std::string text) {
-			return [text](Post* node) {
-				return node->text() == text;
-			};
-		}
-	};
-	
-	template<>
-	struct SearchFunction<const char*> {
-		auto operator()(std::string text) {
-			return [text](Post* node) {
-				return node->text() == text;
-			};
-		}
+	private:
+		GlobalID::IDType _query;
 	};
 }
