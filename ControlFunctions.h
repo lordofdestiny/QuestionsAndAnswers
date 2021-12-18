@@ -5,29 +5,7 @@
 namespace cnt {
 	using namespace qna;
 	void printMenu();
-	template<typename F>
-	void textOrIdMenuHandler(F handle) {
-		bool loop = true;
-		while (loop) {
-			std::cout << "Search by:\n";
-			std::cout << "1. Post text\n";
-			std::cout << "2. Post ID\n";
-			std::cout << "3. Cancel\n";
-			std::cout << "Pick an option: ";
-			int option;
-			std::cin >> option;
-			if (option == 3) {
-				std::cout << "Command cancelled\n";
-				break;
-			}
-			if (option != 1 && option != 2) {
-				std::cout << "Wrong option! Try again\n";
-				continue;
-			}
-			handle(option);
-			loop = false;
-		}
-	}
+	void textOrIdMenuHandler(std::function<void(int)> handle);
 	int activateChoice(int, QuestionPool*&);
 	inline void createPool(QuestionPool*& qpool) {
 		if (qpool != nullptr) {
@@ -51,6 +29,7 @@ namespace cnt {
 	void findMostAnsweredQuestion(QuestionPool*&);
 	void findQuestionWithHighestVotedResponse(QuestionPool*&);
 	void upvoteResponse(QuestionPool*&);
+	Post::PostPrinter::EPrintMode promptForPrintMode();
 	void printQuestion(QuestionPool*&);
 	void deleteQuestion(QuestionPool*&);
 	void deleteResponse(QuestionPool*&);

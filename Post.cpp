@@ -67,7 +67,7 @@ namespace qna {
 			while (remainingInLevel > 0) {
 				auto node = takeFrom(nodes);
 				--remainingInLevel;
-				os << std::string(level, '\t') << *node << "\n";
+				os << std::string(2 * level, '\t') << *node << "\n";
 				for (auto replies : node->answers()) {
 					nodes.push(replies);
 				}
@@ -84,7 +84,7 @@ namespace qna {
 		nodes.emplace(_ptr, 0/*iniital level*/);
 		while (!nodes.empty()) {
 			auto [curr, level] = takeFrom(nodes);
-			os << std::string(level, '\t') << *curr << "\n";
+			os << std::string(2 * level, '\t') << *curr << "\n";
 			auto& cAnswers = curr->answers();
 			for (auto iter = cAnswers.rbegin(); iter != cAnswers.rend(); iter++) {
 				nodes.emplace(*iter, level + 1);
@@ -110,7 +110,7 @@ namespace qna {
 				}
 			}
 			else {
-				os << std::string(height - currLvl, '\t') << *curr << '\n';
+				os << std::string(2 * currLvl, '\t') << *curr << '\n';
 			}
 		}
 		return os;
@@ -131,7 +131,7 @@ namespace qna {
 				}
 			}
 			else {
-				os << std::string(height - currLvl, '\t') << *curr << '\n';
+				os << std::string(2 * currLvl, '\t') << *curr << '\n';
 			}
 		}
 		return os;

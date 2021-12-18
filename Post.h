@@ -90,7 +90,7 @@ namespace qna {
 
 		class PostPrinter {
 		public:
-			enum class EPrintMode { Root, LevelOrder, PreOrder, InOrder,PostOrder };
+			enum class EPrintMode { Root, PreOrder, InOrder, PostOrder, LevelOrder };
 		private:
 			Post const* _ptr;
 			EPrintMode _mode;
