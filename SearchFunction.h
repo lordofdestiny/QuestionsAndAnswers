@@ -7,17 +7,16 @@ namespace qna {
 	template<typename T>
 	concept QueryType =
 		std::is_same_v<T, GlobalID::IDType>
-		|| std::is_same_v<T, std::string>
-		|| std::is_same_v<T, const char*>;
-
-	template<QueryType>
+		|| std::is_same_v<T, std::string>;
+	
+	template<QueryType T>
 	struct SearchFunction {
-		SearchFunction(std::string text) : _query(text) {}
+		SearchFunction(T const& text) : _query(text) {}
 		auto operator()(Post const* node) {
 			return node->text() == _query;
 		}
 	private:
-		std::string _query;
+		std::string const& _query;
 	};
 
 	template<>

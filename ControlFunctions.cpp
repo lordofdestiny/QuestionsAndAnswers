@@ -47,33 +47,33 @@ namespace cnt {
 	void initQuestionPool(qna::QuestionPool*& qpool) {
 		qpool = new QuestionPool();
 		qpool->addQuestion("Question 1");
-		qpool->addAnswer("Question 1", "Answer 1");
-		qpool->addAnswer("Question 1", "Answer 2");
-		qpool->addAnswer("Answer 1", "Answer 1.1");
-		qpool->addAnswer("Answer 1", "Answer 1.2");
-		qpool->addAnswer("Answer 1.1", "Answer 1.1.1");
-		qpool->addAnswer("Answer 1.1", "Answer 1.1.2");
-		qpool->addAnswer("Answer 1.1", "Answer 1.1.3");
-		qpool->addAnswer("Answer 2", "Answer 2.1");
-		qpool->addAnswer("Answer 2", "Answer 2.2");
-		qpool->addAnswer("Answer 2.2", "Answer 2.2.1");
-		qpool->addAnswer("Answer 2.2", "Answer 2.2.2");
-		qpool->addAnswer("Answer 2.2", "Answer 2.2.3");
+		qpool->addAnswer<std::string>("Question 1", "Answer 1");
+		qpool->addAnswer<std::string>("Question 1", "Answer 2");
+		qpool->addAnswer<std::string>("Answer 1", "Answer 1.1");
+		qpool->addAnswer<std::string>("Answer 1", "Answer 1.2");
+		qpool->addAnswer<std::string>("Answer 1.1", "Answer 1.1.1");
+		qpool->addAnswer<std::string>("Answer 1.1", "Answer 1.1.2");
+		qpool->addAnswer<std::string>("Answer 1.1", "Answer 1.1.3");
+		qpool->addAnswer<std::string>("Answer 2", "Answer 2.1");
+		qpool->addAnswer<std::string>("Answer 2", "Answer 2.2");
+		qpool->addAnswer<std::string>("Answer 2.2", "Answer 2.2.1");
+		qpool->addAnswer<std::string>("Answer 2.2", "Answer 2.2.2");
+		qpool->addAnswer<std::string>("Answer 2.2", "Answer 2.2.3");
 		qpool->addQuestion("Question 2");
-		qpool->addAnswer("Question 2", "Answer X");
-		qpool->addAnswer("Question 2", "Answer XX");
-		qpool->addAnswer("Question 2", "Answer XXX");
+		qpool->addAnswer<std::string>("Question 2", "Answer X");
+		qpool->addAnswer<std::string>("Question 2", "Answer XX");
+		qpool->addAnswer<std::string>("Question 2", "Answer XXX");
 		qpool->addQuestion("Question 3");
-		qpool->addAnswer("Question 3", "Only this answer");
-		qpool->upvote("Answer 1.1.1");
-		qpool->upvote("Answer 1.1.1");
-		qpool->upvote("Answer 1.1.2");
-		qpool->upvote("Answer 1.1.3");
-		qpool->upvote("Answer 1.1.3");
-		qpool->upvote("Answer 1.1.3");
-		qpool->upvote("Answer 2.1");
-		qpool->upvote("Answer 2.2");
-		qpool->upvote("Answer 2");
+		qpool->addAnswer<std::string>("Question 3", "Only this answer");
+		qpool->upvote<std::string>("Answer 1.1.1");
+		qpool->upvote<std::string>("Answer 1.1.1");
+		qpool->upvote<std::string>("Answer 1.1.2");
+		qpool->upvote<std::string>("Answer 1.1.3");
+		qpool->upvote<std::string>("Answer 1.1.3");
+		qpool->upvote<std::string>("Answer 1.1.3");
+		qpool->upvote<std::string>("Answer 2.1");
+		qpool->upvote<std::string>("Answer 2.2");
+		qpool->upvote<std::string>("Answer 2");
 	}
 
 	int activateChoice(int choice, qna::QuestionPool*& qpool) {

@@ -39,18 +39,18 @@ namespace qna {
 		}
 
 		template<QueryType T>
-		bool addAnswer(T _query, std::string text) {
-			Post* node = find(std::forward<T>(_query), ESearchType::Any);
+		bool addAnswer(T const& _query, std::string text) {
+			Post* node = find(std::forward<T const&>(_query), ESearchType::Any);
 			return node != nullptr ? node->answer(text) : false;
 		}
 
 		template<QueryType T>
-		Post* findQuestion(T _query) {
+		Post* findQuestion(T const& _query) {
 			return find(_query, ESearchType::Question);
 		}
 
 		template<QueryType T>
-		Post* findHighestVotedResponse(T _query) {
+		Post* findHighestVotedResponse(T const& _query) {
 			Post* node = findQuestion(_query);
 			if (node == nullptr) return nullptr;
 			Post* maxNode = nullptr;
@@ -101,7 +101,7 @@ namespace qna {
 		}
 
 		template<QueryType T>
-		bool upvote(T _query) {
+		bool upvote(T const& _query) {
 			Post* node = find(_query, ESearchType::Response);
 			if (node == nullptr || node->isQuestion()) return false;
 			node->upvote();
@@ -121,7 +121,7 @@ namespace qna {
 		}
 
 		template<typename T>
-		void printQuestion(T query, PrintMode mode = PrintMode::LevelOrder, std::ostream& os = std::cout) {
+		void printQuestion(T const& query, PrintMode mode = PrintMode::LevelOrder, std::ostream& os = std::cout) {
 			Post* node = findQuestion(query);
 			if (node == nullptr) {
 				os << "Question not found!\n";
@@ -131,7 +131,7 @@ namespace qna {
 		}
 
 		template<QueryType T>
-		bool deleteQuestion(T query) {
+		bool deleteQuestion(T const& query) {
 			SearchFunction<T> condition(query);
 			auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
 			if (toDelete == _questions.end()) return false;
@@ -140,7 +140,7 @@ namespace qna {
 		}
 
 		template<typename T>
-		bool deleteResponse(T query) {
+		bool deleteResponse(T const& query) {
 			Post* node = find(query, ESearchType::Response);
 			SearchFunction<T> condition(query);
 			if (node == nullptr || node->isQuestion()) return false;
@@ -156,7 +156,7 @@ namespace qna {
 		}
 	private:
 		template<QueryType T>
-		Post* find(T query, ESearchType stype) {
+		Post* find(T const& query, ESearchType stype) {
 			using enum ESearchType;
 			bool findQuestion = stype == Question;
 			bool findResponse = stype == Response;
