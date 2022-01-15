@@ -1,5 +1,6 @@
 #pragma once
 #include <iostream>
+#include <utility>
 #include "QuestionPool.h"
 
 namespace cnt {
@@ -9,7 +10,7 @@ namespace cnt {
 	int activateChoice(int, QuestionPool*&);
 	inline void createPool(QuestionPool*& qpool) {
 		if (qpool != nullptr) {
-			delete qpool;
+			delete std::exchange(qpool,nullptr);
 		}
 		qpool = new qna::QuestionPool();
 	}

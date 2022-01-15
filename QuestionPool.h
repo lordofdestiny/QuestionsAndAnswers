@@ -1,6 +1,7 @@
 #pragma once
+#include <iostream>
 #include <vector>
-#include <unordered_map>
+#include <utility>
 #include <functional>
 #include "Post.h"
 #include "SearchFunction.h"
@@ -28,9 +29,10 @@ namespace qna {
 		}
 
 		~QuestionPool() {
-			for (auto question : _questions) {
-				delete question;
+			for (auto& question : _questions) {
+				delete std::exchange(question, nullptr);
 			}
+            std::cout << "Called !!!\n";
 			_questions.clear();
 		}
 
@@ -75,7 +77,7 @@ namespace qna {
 			std::unordered_map<Post*, unsigned> maxVotes;
 			std::transform(_questions.begin(), _questions.end(),
 				std::inserter(maxVotes, maxVotes.end()),
-				[this](Post* const& node) {
+				[](Post* const& node) {
 					return std::make_pair(node, node->totalResponseCount());
 				});
 			auto maxNode = std::max_element(
@@ -135,19 +137,21 @@ namespace qna {
 			SearchFunction<T> condition(query);
 			auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
 			if (toDelete == _questions.end()) return false;
-			_questions.erase(toDelete);
+			delete *toDelete;
+            _questions.erase(toDelete);
 			return true;
 		}
 
 		template<typename T>
 		bool deleteResponse(T const& query) {
 			Post* node = find(query, ESearchType::Response);
-			SearchFunction<T> condition(query);
 			if (node == nullptr || node->isQuestion()) return false;
+			SearchFunction<T> condition(query);
 			auto& pAnswers = node->parent()->answers();
 			auto toDelete = std::find_if(pAnswers.begin(), pAnswers.end(), condition);
 			if (toDelete == pAnswers.end()) return false;
-			pAnswers.erase(toDelete);
+            delete static_cast<Post*>(*toDelete);
+            pAnswers.erase(toDelete);
 			return true;
 		}
 

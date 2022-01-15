@@ -94,7 +94,7 @@ namespace qna {
 	}
 	std::ostream& Post::PostPrinter::printInOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nullptr";
-		std::size_t height = Post::treeHeight(_ptr);
+		// std::size_t height = Post::treeHeight(_ptr);
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
 		nodes.emplace(_ptr, 0/*initlevel*/, false);
 		while (!nodes.empty()) {
@@ -117,7 +117,7 @@ namespace qna {
 	}
 	std::ostream& Post::PostPrinter::printPostOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nullptr";
-		std::size_t height = Post::treeHeight(_ptr);
+		// std::size_t height = Post::treeHeight(_ptr);
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
 		nodes.emplace(_ptr, 0/*init level*/, false);
 		while (!nodes.empty())
@@ -156,7 +156,8 @@ namespace qna {
 	std::size_t Post::treeHeight(Post const* root) {
 		std::stack<std::pair<Post const*, std::size_t>> nodes;
 		nodes.emplace(root, 0/*init level*/);
-		std::size_t maxLevel = 0, prevLvl = -1;
+		std::size_t maxLevel = 0;
+        // std::size_t prevLvl = -1;
 		while (!nodes.empty()) {
 			auto [curr, currLvl] = takeFrom(nodes);
 			if (curr->childrenCount() == 0) {

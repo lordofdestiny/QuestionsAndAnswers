@@ -4,7 +4,7 @@
 #include "ControlFunctions.h"
 #define PRE_INIT 1
 
-// i == 1 , j == 2
+// i == 1 , j == 1
 // level order
 // pronalazak odgovora ili komentara na zadato pitanje sa najvisom ocenom
 

@@ -3,7 +3,7 @@
 
 namespace cnt {
 
-	void cnt::textOrIdMenuHandler(std::function<void(int)> handle) {
+	void textOrIdMenuHandler(std::function<void(int)> handle) {
 		bool loop = true;
 		while (loop) {
 			std::cout << "Search by:\n";
@@ -24,7 +24,7 @@ namespace cnt {
 		}
 	}
 
-	void cnt::printMenu() {
+	void printMenu() {
 		std::cout << cnt::separator;
 		std::cout << "Menu: \n";
 		std::cout << "0. Print menu\n";
@@ -45,6 +45,7 @@ namespace cnt {
 	}
 
 	void initQuestionPool(qna::QuestionPool*& qpool) {
+        if(qpool != nullptr) return;
 		qpool = new QuestionPool();
 		qpool->addQuestion("Question 1");
 		qpool->addAnswer<std::string>("Question 1", "Answer 1");
