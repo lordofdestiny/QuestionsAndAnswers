@@ -32,8 +32,6 @@ namespace qna {
 			for (auto& question : _questions) {
 				delete std::exchange(question, nullptr);
 			}
-            std::cout << "Called !!!\n";
-			_questions.clear();
 		}
 
 		void addQuestion(std::string text) {

@@ -6,7 +6,6 @@ namespace qna {
 		for (auto& answer : _answers) {
 			delete static_cast<Post*>(answer);
 		}
-		_answers.clear();
 	}
 
 	qna::Answer& Post::findInParent() const {
@@ -94,7 +93,6 @@ namespace qna {
 	}
 	std::ostream& Post::PostPrinter::printInOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nullptr";
-		// std::size_t height = Post::treeHeight(_ptr);
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
 		nodes.emplace(_ptr, 0/*initlevel*/, false);
 		while (!nodes.empty()) {
@@ -117,7 +115,6 @@ namespace qna {
 	}
 	std::ostream& Post::PostPrinter::printPostOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nullptr";
-		// std::size_t height = Post::treeHeight(_ptr);
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
 		nodes.emplace(_ptr, 0/*init level*/, false);
 		while (!nodes.empty())
