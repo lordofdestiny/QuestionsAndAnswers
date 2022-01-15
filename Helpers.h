@@ -7,14 +7,14 @@
 namespace cnt {
 template<typename T>
 	inline typename std::stack<T>::value_type takeFrom(std::stack<T>& stack) {
-		auto value = stack.top();
+		auto value = std::move(stack.top());
 		stack.pop();
 		return value;
 	}
 
 	template<typename T>
 	inline typename std::queue<T>::value_type takeFrom(std::queue<T>& queue) {
-		auto value = queue.front();
+		auto value = std::move(queue.front());
 		queue.pop();
 		return value;
 	}
