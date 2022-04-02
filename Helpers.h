@@ -5,7 +5,7 @@
 #include <stack>
 
 namespace cnt {
-template<typename T>
+	template<typename T>
 	inline typename std::stack<T>::value_type takeFrom(std::stack<T>& stack) {
 		auto value = std::move(stack.top());
 		stack.pop();

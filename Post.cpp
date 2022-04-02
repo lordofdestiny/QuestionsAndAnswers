@@ -55,6 +55,7 @@ namespace qna {
 		}
 		return os << "]";
 	}
+
 	std::ostream& Post::PostPrinter::printLevelOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nulltpr";
 		std::queue <Post const*> nodes;
