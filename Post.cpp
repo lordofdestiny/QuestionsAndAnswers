@@ -1,7 +1,6 @@
 #include "Post.h"
 
 namespace qna {
-	using cnt::takeFrom;
 	Post::~Post() {
 		for (auto& answer : _answers) {
 			delete static_cast<Post*>(answer);
@@ -29,10 +28,12 @@ namespace qna {
 		std::queue<Post*> nodes;
 		nodes.push(this);
 		while (!nodes.empty()) {
-			Post* curr = takeFrom(nodes);
+			Post* curr = std::move(nodes.front());
+			nodes.pop();
+				
 			auto& cAnswers = curr->answers();
 			std::sort(cAnswers.begin(), cAnswers.end(), std::greater<Answer>());
-			for (auto answer : cAnswers) {
+			for (auto& answer : cAnswers) {
 				nodes.push(answer);
 			}
 		}
@@ -55,6 +56,7 @@ namespace qna {
 		}
 		return os << "]";
 	}
+	
 	std::ostream& Post::PostPrinter::printLevelOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nulltpr";
 		std::queue <Post const*> nodes;
@@ -64,10 +66,12 @@ namespace qna {
 		unsigned remainingInLevel = 1;
 		while (!nodes.empty()) {
 			while (remainingInLevel > 0) {
-				auto node = takeFrom(nodes);
+				auto node = std::move(nodes.front());
+				nodes.pop();
+			
 				--remainingInLevel;
-				os << std::string(2 * level, '\t') << *node << "\n";
-				for (auto replies : node->answers()) {
+				os << std::string(2 * level, '\t') << *node << "\n";			
+				for (auto& replies : node->answers()) {
 					nodes.push(replies);
 				}
 				addedToLevel += node->childrenCount();
@@ -80,35 +84,42 @@ namespace qna {
 	std::ostream& Post::PostPrinter::printPreOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nulltpr";
 		std::stack <std::pair<Post const*, unsigned>> nodes;
-		nodes.emplace(_ptr, 0/*iniital level*/);
+		nodes.emplace(_ptr, 0);
 		while (!nodes.empty()) {
-			auto [curr, level] = takeFrom(nodes);
+			auto [curr, level] = std::move(nodes.top());
+			nodes.pop();
+			
 			os << std::string(2 * level, '\t') << *curr << "\n";
+			
 			auto& cAnswers = curr->answers();
+			
 			for (auto iter = cAnswers.rbegin(); iter != cAnswers.rend(); iter++) {
 				nodes.emplace(*iter, level + 1);
 			}
 		}
 		return os;
 	}
-	std::ostream& Post::PostPrinter::printInOrder(std::ostream& os) const {
+
+	std::ostream& Post::PostPrinter::printInOrder(std::ostream& os) const {	
 		if (_ptr == nullptr) return os << "nullptr";
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
-		nodes.emplace(_ptr, 0/*initlevel*/, false);
+		nodes.emplace(_ptr, 0, false);
 		while (!nodes.empty()) {
-			auto [curr, currLvl, visited] = takeFrom(nodes);
+			auto [curr, level, visited] = std::move(nodes.top());
+			nodes.pop();
+			
 			auto& cAnswers = curr->answers();
 			if (!visited) {
 				if (!cAnswers.empty()) {
-					nodes.emplace(cAnswers.back(), currLvl + 1, false);
+					nodes.emplace(cAnswers.back(), level + 1, false);
 				}
-				nodes.emplace(curr, currLvl, true);
+				nodes.emplace(curr, level, true);
 				for (int i = curr->childrenCount() - 2; i >= 0; i--) {
-					nodes.emplace(cAnswers[i], currLvl + 1, false);
+					nodes.emplace(cAnswers[i], level + 1, false);
 				}
 			}
 			else {
-				os << std::string(2 * currLvl, '\t') << *curr << '\n';
+				os << std::string(2 * level, '\t') << *curr << '\n';
 			}
 		}
 		return os;
@@ -116,10 +127,13 @@ namespace qna {
 	std::ostream& Post::PostPrinter::printPostOrder(std::ostream& os) const {
 		if (_ptr == nullptr) return os << "nullptr";
 		std::stack<std::tuple<Post const*, std::size_t, bool>> nodes;
-		nodes.emplace(_ptr, 0/*init level*/, false);
+		nodes.emplace(_ptr, 0, false);
+		
 		while (!nodes.empty())
 		{
-			auto [curr, currLvl, visited] = takeFrom(nodes);
+			auto [curr, currLvl, visited] = std::move(nodes.top());
+			nodes.pop();
+			
 			auto& cAnswers = curr->answers();
 			if (!visited) {
 				nodes.emplace(curr, currLvl, true);
@@ -152,19 +166,21 @@ namespace qna {
 
 	std::size_t Post::treeHeight(Post const* root) {
 		std::stack<std::pair<Post const*, std::size_t>> nodes;
-		nodes.emplace(root, 0/*init level*/);
+		nodes.emplace(root, 0);
+		
 		std::size_t maxLevel = 0;
-        // std::size_t prevLvl = -1;
 		while (!nodes.empty()) {
-			auto [curr, currLvl] = takeFrom(nodes);
+			auto [curr, level] = std::move(nodes.top());
+			nodes.pop();
+			
 			if (curr->childrenCount() == 0) {
-				if (currLvl > maxLevel) {
-					maxLevel = currLvl;
+				if (level > maxLevel) {
+					maxLevel = level;
 				}
 			}
 			else {
 				for (auto answer : curr->answers()) {
-					nodes.emplace(answer, currLvl + 1);
+					nodes.emplace(answer, level + 1);
 				}
 			}
 		}

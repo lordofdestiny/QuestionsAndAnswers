@@ -13,8 +13,6 @@
 #include "GlobalID.h"
 
 namespace qna {
-	using cnt::takeFrom;
-
 	class Answer;
 	class Post
 	{
@@ -73,7 +71,8 @@ namespace qna {
 			nodes.push(this);
 			unsigned count = this->childrenCount();
 			while (!nodes.empty()) {
-				auto curr = takeFrom(nodes);
+				auto curr = nodes.front();
+				nodes.pop();
 				for (Post* node : curr->answers()) {
 					nodes.push(node);
 					count += node->childrenCount();

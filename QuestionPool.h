@@ -7,8 +7,6 @@
 #include "SearchFunction.h"
 
 namespace qna {
-	using cnt::takeFrom;
-
 	class QuestionPool
 	{
 		using PrintMode = Post::PostPrinter::EPrintMode;
@@ -57,9 +55,11 @@ namespace qna {
 			std::queue<Post*> nodes;
 			nodes.push(node);
 			while (!nodes.empty()) {
-				Post* node = takeFrom(nodes);
+				Post* node = nodes.front();
+				nodes.pop();
+				
 				if (node == nullptr) continue;
-				for (auto node : node->answers()) {
+				for (auto& node : node->answers()) {
 					nodes.push(node);
 				}
 				if (node->isQuestion()) continue;
@@ -176,13 +176,14 @@ namespace qna {
 			}
 			Post* result = nullptr;
 			while (!nodes.empty()) {
-				Post* curr = takeFrom(nodes);
+				Post* curr = nodes.front();
+				nodes.pop();
 				if (condition(curr)) {
 					result = curr;
 					break;
 				}
 				if (findQuestion) continue;
-				for (auto answer : curr->answers()) {
+				for (auto& answer : curr->answers()) {
 					nodes.push(answer);
 				}
 			}
