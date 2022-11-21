@@ -73,29 +73,38 @@ namespace qna {
 		Post* findMostAnsweredQuestion() {
 			if (_questions.empty()) return nullptr;
 			std::unordered_map<Post*, unsigned> maxVotes;
-			std::transform(_questions.begin(), _questions.end(),
+			std::ranges::transform(_questions,
 				std::inserter(maxVotes, maxVotes.end()),
-				[](Post* const& node) {
-					return std::make_pair(node, node->totalResponseCount());
+				[](Post* const& node) -> std::pair<Post*, unsigned> {
+					return { node, node->totalResponseCount() };
 				});
-			auto maxNode = std::max_element(
-				_questions.begin(), _questions.end(),
+
+			auto maxNode = std::ranges::max_element(_questions,
 				[&maxVotes](Post* first, Post* second) {
 					return maxVotes[first] < maxVotes[second];
 				});
+
 			if (maxNode == _questions.end()) return nullptr;
 			return *maxNode;
 		}
 
 		Post* findQuestionWithHighestVotedResponse() {
 			if (_questions.empty()) return nullptr;
-			auto maxNode = std::max_element(
-				_questions.begin(), _questions.end(),
-				[this](Post* first, Post* second) {
-					auto highestVotedFirst = findHighestVotedResponse(first->id());
-					auto highestVotedSecond = findHighestVotedResponse(second->id());
-					return highestVotedFirst->votes() < highestVotedSecond->votes();
+
+			std::unordered_map<Post*, unsigned> highestVotes;
+			std::ranges::transform(_questions,
+				std::inserter(highestVotes, highestVotes.end()),
+				[this](Post* const& node) -> std::pair<Post*, unsigned> {
+					Post* hvr = findHighestVotedResponse(node->id());
+					return { hvr, hvr->votes() };
+				}
+			);
+
+			auto maxNode = std::ranges::max_element(_questions,
+				[&highestVotes](Post* first, Post* second) {
+					return highestVotes[first] < highestVotes[second];
 				});
+
 			if (maxNode == _questions.end()) return nullptr;
 			return *maxNode;
 		}
@@ -109,9 +118,8 @@ namespace qna {
 		}
 
 		void sortAll() {
-			for (auto& node : _questions) {
-				node->sort();
-			}
+			using namespace std::placeholders;
+			std::ranges::for_each(_questions, std::bind(&Post::sort, _1));
 		}
 
 		void printQuestions(std::ostream& os = std::cout) {
@@ -133,10 +141,10 @@ namespace qna {
 		template<QueryType T>
 		bool deleteQuestion(T const& query) {
 			SearchFunction<T> condition(query);
-			auto toDelete = std::find_if(_questions.begin(), _questions.end(), condition);
+			auto toDelete = std::ranges::find_if(_questions, condition);
 			if (toDelete == _questions.end()) return false;
-			delete *toDelete;
-            _questions.erase(toDelete);
+			delete* toDelete;
+			_questions.erase(toDelete);
 			return true;
 		}
 
@@ -146,10 +154,10 @@ namespace qna {
 			if (node == nullptr || node->isQuestion()) return false;
 			SearchFunction<T> condition(query);
 			auto& pAnswers = node->parent()->answers();
-			auto toDelete = std::find_if(pAnswers.begin(), pAnswers.end(), condition);
+			auto toDelete = std::ranges::find_if(pAnswers, condition);
 			if (toDelete == pAnswers.end()) return false;
-            delete static_cast<Post*>(*toDelete);
-            pAnswers.erase(toDelete);
+			delete static_cast<Post*>(*toDelete);
+			pAnswers.erase(toDelete);
 			return true;
 		}
 
